@@ -1,0 +1,111 @@
+---
+title: "CVD Project - Aim 1 - Notebook"
+author: "Tamy Tsujimoto"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+  theme: paper 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project Overview
+
+In the proposed proof of concept study, we will determine if adding specific adverse pregnancy outcomes (APOs) as risk factors to the ACC/AHA Pooled Cohort Equations (ACC/AHA PCE) improves cardiovascular (CVD) risk prediction in women.
+
+### Goal
+
+Aim 1: Examine if adding pre-term delivery or gestational diabetes to the traditional risk factors in the ACC/AHA PCE improves risk prediction compared with traditional risk factors alone, using a national prospective cohort.
+
+### Study Sample
+
+* Women
+* ages 40 - 79 years
+* At least one pregnancy
+* No existing cardiovascular disease at baseline
+    
+### Outcome
+
+CVD-specific death.
+
+### ACC/AHA PCE
+
+* Reference: [2013 ACC/AHA Guideline on the Assessment of Cardiovascular Risk](https://www.ahajournals.org/doi/pdf/10.1161/01.cir.0000437741.48606.98)
+* [2018 Prevention Guidelines Tool CV Risk Calculator](http://static.heart.org/riskcalc/app/index.html#!/baseline-risk)
+* Sex and race specific equations to predict 10-year risk for first ASCVD event
+* Ten-year risk was defined as the risk of developing a first ASCVD event, defined as nonfatal myocardial infarction (MI) or coronary heart disease (CHD) death, or fatal or nonfatal stroke, over a 10-year period among people free from ASCVD at the beginning of the period
+* The ASCVD risk estimates were developed from sex-and race-specific proportional hazards models that included the covariates of age, treated or untreated systolic blood pressure (SBP), total cholesterol, high-density lipoprotein cholesterol (HDL-C), current smoking (Y/N), and diabetes (Y/N)
+* End points were censored at 12 years, and model fit was evaluated through the area under the receiver operating curve (C-statistic) for discrimination and the calibration chi-squared statistic
+
+### Data sources
+
+* [National Health and Nutrition Examination Survey (NHANES)](https://wwwn.cdc.gov/nchs/nhanes/Default.aspx)
+    + Continuous NHANES datasets (2 years) - 1999-2014
+    +	Databases (119)
+        + Demographics (1)
+        + Dietary (8)
+        + Examination (18)
+        + Laboratory (48)
+        + Questionnaire (44)
+    + [NHANES Survey Methods and Analytic Guidelines](https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx)
+        + Plans and Operations
+        + Sample Design
+        + Estimation and Weight Procedures
+        + Analytic guidelines
+            + [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+            + [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+* [NDI Mortality Files](https://www.cdc.gov/nchs/data-linkage/mortality.htm)
+    + [File Description](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-file-description.pdf)
+    + [Public-Use Data Dictionary](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-files-data-dictionary.pdf)
+    + [Mortality Files](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/)
+    
+
+### Data Assembly steps and deadlines
+
+1. Shortlist variables/datasets that will be used from NHANES
+2. Download and merge surveys from 1999-2014 (05/01/2019)
+3. Construct appropriate survey weights (06/01/2019)
+4. Merge with mortality data (06/01/2019)
+5. Select target population (06/01/2019)
+
+### Meetings
+
+Date: 11/04
+
+Questions:
+
+* Is it possible to have a patient be in multiple surveys?
+* Outcome: Time to CVD-specific death? What would be the time of origin?
+
+Date: 25/04
+
+To do for this meeting:
+
+* Review documentation, email CDC - Sent an email to CDC
+* Start creating codebook and compiling databases for exam and lab variables - First draft sent to Shivani (Has to include CVD information)
+    + Race variable enough for our study?
+    + Should we collect the information on consumption of food, alcohol, coffe and cigarretes in past 30 minutes for SBP measures?
+    + Consider treated SBP if any (current) hypertension prescription?
+    + Inclusion criteria: At least one pregnancy or pregnancy with live birth?
+    + Should we exclude current pregnants?
+    + APOs: Gestational diabetes available from 2007-2016 and Preterm delivery, small weight at birth and breast feeding only available from 1999-2006. Are we going to split the cohort according to the APO information available?
+* Review NHANES papers for smoking variable
+
+Questions:
+
+* ACC/AHA PCE are gender and race specific. Are we going to do the analysis by race?
+
+Next steps:
+
+* Start downloading and merging the NHANES databases (once years are decided)
+* Understand how weights should be constructed
+* Link mortality to dataset
+
+
+## Downloading NHANES data
+
+* Using the [R package to RNHANES](https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html) to download the datasets
+
