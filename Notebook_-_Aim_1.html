@@ -507,7 +507,22 @@ nhanes_load_data(file = c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'CO
 # Glycohemoglobin 
 nhanes_load_data(file = c('LAB10', 'L10_B', 'L10_C', rep('GHB', 5)), 
                  year = yr, 
-                 destination = &quot;nhanes_data&quot;)</code></pre>
+                 destination = &quot;nhanes_data&quot;)
+
+# Medical Conditions 
+nhanes_load_data(file = &quot;MCQ&quot;, 
+                 year = yr, 
+                 destination = &quot;../3 - Databases/nhanes_data&quot;)
+
+# Oral Glucose Tolerance Test 
+nhanes_load_data(file = 'OGTT', 
+                 year = yr[-c(1:3)], 
+                 destination = &quot;../3 - Databases/nhanes_data&quot;)
+
+# Plasma Fasting Glucose
+nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)), 
+                 year = yr, 
+                 destination = &quot;../3 - Databases/nhanes_data&quot;)</code></pre>
 </div>
 <div id="variable-extraction" class="section level2">
 <h2>Variable extraction</h2>
@@ -689,6 +704,38 @@ glyc =
          end_year,
          LBXGH)
 
+# Medical Conditions 
+mcq = 
+  stack_nhanes_data(pattern = 'MCQ') %&gt;% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         MCQ160A,
+         MCQ180A,
+         MCQ190)
+
+# Oral Glucose Tolerance Test 
+ogt = 
+  stack_nhanes_data(pattern = 'OGTT') %&gt;% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLT)
+
+# Plasma Fasting Glucose
+glu = 
+  stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = &quot;|&quot;)) %&gt;% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLU)
+
 ############
 # CHECKING #
 ############
@@ -700,9 +747,12 @@ bind_rows('DEMO - Demographic and Weights' = demo,
           'DIQ - Diabetes' = diq,
           'RHQ - Reproductive Health' = rhq, 
           'L13 + CHOL - Cholesterol' = chol,
+          'MCQ - Medical Conditions' = mcq,
           'HDL' = hdl,
           'Cotinine' = cot, 
-          'Glycohemoglobin' = glyc, 
+          'Glycohemoglobin' = glyc,
+          'Glucose Tolerance Test' = ogt,
+          'Fasting Glucose' = glu,
           .id = 'Database') %&gt;% 
   select(Database, cycle) %&gt;% 
   group_by(Database, cycle) %&gt;% 
@@ -847,6 +897,38 @@ DIQ - Diabetes
 </tr>
 <tr>
 <td style="text-align:left;">
+MCQ - Medical Conditions
+</td>
+<td style="text-align:right;">
+9,493
+</td>
+<td style="text-align:right;">
+10,470
+</td>
+<td style="text-align:right;">
+9,645
+</td>
+<td style="text-align:right;">
+9,822
+</td>
+<td style="text-align:right;">
+9,666
+</td>
+<td style="text-align:right;">
+10,109
+</td>
+<td style="text-align:right;">
+9,364
+</td>
+<td style="text-align:right;">
+9,770
+</td>
+<td style="text-align:right;">
+78,339
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 Cotinine
 </td>
 <td style="text-align:right;">
@@ -914,7 +996,7 @@ L13 + CHOL - Cholesterol
 Glycohemoglobin
 </td>
 <td style="text-align:right;">
-6,758
+10,025
 </td>
 <td style="text-align:right;">
 7,445
@@ -938,7 +1020,7 @@ Glycohemoglobin
 6,979
 </td>
 <td style="text-align:right;">
-55,987
+59,254
 </td>
 </tr>
 <tr>
@@ -1067,6 +1149,70 @@ RHQ - Reproductive Health
 </td>
 <td style="text-align:right;">
 28,688
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fasting Glucose
+</td>
+<td style="text-align:right;">
+3,267
+</td>
+<td style="text-align:right;">
+3,666
+</td>
+<td style="text-align:right;">
+3,356
+</td>
+<td style="text-align:right;">
+3,352
+</td>
+<td style="text-align:right;">
+3,315
+</td>
+<td style="text-align:right;">
+3,581
+</td>
+<td style="text-align:right;">
+3,239
+</td>
+<td style="text-align:right;">
+3,329
+</td>
+<td style="text-align:right;">
+27,105
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Glucose Tolerance Test
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3,352
+</td>
+<td style="text-align:right;">
+3,315
+</td>
+<td style="text-align:right;">
+3,163
+</td>
+<td style="text-align:right;">
+2,815
+</td>
+<td style="text-align:right;">
+2,909
+</td>
+<td style="text-align:right;">
+15,554
 </td>
 </tr>
 </tbody>

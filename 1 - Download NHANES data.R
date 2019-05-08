@@ -37,6 +37,11 @@ nhanes_load_data(file = "RHQ",
                  year = yr, 
                  destination = "nhanes_data")
 
+# Medical Conditions 
+nhanes_load_data(file = "MCQ", 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")
+
 ########################################
 # DIFFERENT NAMES DATASETS (1999-2014) #
 ########################################
@@ -60,4 +65,12 @@ nhanes_load_data(file = c('LAB10', 'L10_B', 'L10_C', rep('GHB', 5)),
                  year = yr, 
                  destination = "nhanes_data")
 
+# Oral Glucose Tolerance Test 
+nhanes_load_data(file = 'OGTT', 
+                 year = yr[-c(1:3)], 
+                 destination = "../3 - Databases/nhanes_data")
 
+# Plasma Fasting Glucose
+nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)), 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")

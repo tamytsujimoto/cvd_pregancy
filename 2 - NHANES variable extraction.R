@@ -181,26 +181,37 @@ glyc =
          end_year,
          LBXGH)
 
-############
-# CHECKING #
-############
+# Medical Conditions 
+mcq = 
+  stack_nhanes_data(pattern = 'MCQ') %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         MCQ160A,
+         MCQ180A,
+         MCQ190)
 
-bind_rows('demo' = demo, 
-            'bpx' = bpx, 
-            'bpq' = bpq, 
-            'smq' = smq,
-            'diq' = diq,
-            'rhq' = rhq, 
-            'chol' = chol,
-            'hdl' = hdl,
-            'cot' = cot, 
-            'glyc' = glyc, 
-            .id = 'db_name') %>% 
-  select(db_name, cycle) %>% 
-  group_by(db_name, cycle) %>% 
-  summarise(n = n()) %>% 
-  spread(key = cycle, value = n) %>% 
-  ungroup() %>% 
-  mutate(total = rowSums(.[,2:9])) %>% 
-  arrange(desc(total))
+# Oral Glucose Tolerance Test 
+ogt = 
+  stack_nhanes_data(pattern = 'OGTT') %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLT)
+
+# Plasma Fasting Glucose
+glu = 
+  stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = "|")) %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLU)
+
+
 

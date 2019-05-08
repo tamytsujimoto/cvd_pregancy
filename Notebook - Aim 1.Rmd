@@ -177,6 +177,21 @@ nhanes_load_data(file = c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'CO
 nhanes_load_data(file = c('LAB10', 'L10_B', 'L10_C', rep('GHB', 5)), 
                  year = yr, 
                  destination = "nhanes_data")
+
+# Medical Conditions 
+nhanes_load_data(file = "MCQ", 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")
+
+# Oral Glucose Tolerance Test 
+nhanes_load_data(file = 'OGTT', 
+                 year = yr[-c(1:3)], 
+                 destination = "../3 - Databases/nhanes_data")
+
+# Plasma Fasting Glucose
+nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)), 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")
 ```
 
 ## Variable extraction
@@ -368,6 +383,38 @@ glyc =
          end_year,
          LBXGH)
 
+# Medical Conditions 
+mcq = 
+  stack_nhanes_data(pattern = 'MCQ') %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         MCQ160A,
+         MCQ180A,
+         MCQ190)
+
+# Oral Glucose Tolerance Test 
+ogt = 
+  stack_nhanes_data(pattern = 'OGTT') %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLT)
+
+# Plasma Fasting Glucose
+glu = 
+  stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = "|")) %>% 
+  select(SEQN,
+         file_name,
+         cycle,
+         begin_year,
+         end_year,
+         LBXGLU)
+
 ############
 # CHECKING #
 ############
@@ -379,9 +426,12 @@ bind_rows('DEMO - Demographic and Weights' = demo,
           'DIQ - Diabetes' = diq,
           'RHQ - Reproductive Health' = rhq, 
           'L13 + CHOL - Cholesterol' = chol,
+          'MCQ - Medical Conditions' = mcq,
           'HDL' = hdl,
           'Cotinine' = cot, 
-          'Glycohemoglobin' = glyc, 
+          'Glycohemoglobin' = glyc,
+          'Glucose Tolerance Test' = ogt,
+          'Fasting Glucose' = glu,
           .id = 'Database') %>% 
   select(Database, cycle) %>% 
   group_by(Database, cycle) %>% 
