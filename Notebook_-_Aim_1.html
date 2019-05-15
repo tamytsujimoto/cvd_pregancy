@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-05-08" />
+<meta name="date" content="2019-05-15" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>05/08/2019</em></h4>
+<h4 class="date"><em>05/15/2019</em></h4>
 
 </div>
 
@@ -548,10 +548,7 @@ stack_nhanes_data = function(path = data_path, pattern){
 demo = 
   stack_nhanes_data(pattern = 'DEMO') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,
@@ -567,10 +564,7 @@ demo =
 bpx = 
   stack_nhanes_data(pattern = 'BPX') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPXSY1,
          BPXSY2,
          BPXSY3,
@@ -589,10 +583,7 @@ bpx =
 bpq = 
   stack_nhanes_data(pattern = 'BPQ') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPQ080,
          BPQ020,
          BPQ030,
@@ -604,10 +595,7 @@ bpq =
 smq = 
   stack_nhanes_data(pattern = 'SMQ') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          SMQ020,
          SMQ040,
          SMQ050Q,
@@ -617,10 +605,7 @@ smq =
 diq = 
   stack_nhanes_data(pattern = 'DIQ') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          DIQ010,
          DIQ050,
          DIQ070,
@@ -631,10 +616,7 @@ diq =
 rhq = 
   stack_nhanes_data(pattern = 'RHQ') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RHQ031,
          RHD042,
          #RHQ135C,
@@ -666,10 +648,7 @@ rhq =
 chol = 
   stack_nhanes_data(pattern = paste(c('Lab13', 'l13_b', 'l13_c', 'TCHOL'), collapse = &quot;|&quot;)) %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXTC,
          LBDHDL,
          LBXHDD)
@@ -678,40 +657,28 @@ chol =
 hdl = 
   stack_nhanes_data(pattern ='HDL') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBDHDD)
 
 # Cotinine 
 cot = 
   stack_nhanes_data(pattern = paste(c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'COTNAL_F', 'COTNAL_G', 'COT_H'), collapse = &quot;|&quot;)) %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXCOT)
 
 # Glycohemoglobin 
 glyc = 
-  stack_nhanes_data(pattern = paste(c('LAB10', 'L10_B', 'L10_C', 'GHB'), collapse = &quot;|&quot;)) %&gt;% 
+  stack_nhanes_data(pattern = paste(c('LAB10.csv', 'L10_B', 'L10_C', 'GHB'), collapse = &quot;|&quot;)) %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGH)
 
 # Medical Conditions 
 mcq = 
   stack_nhanes_data(pattern = 'MCQ') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          MCQ160A,
          MCQ180A,
          MCQ190)
@@ -720,20 +687,14 @@ mcq =
 ogt = 
   stack_nhanes_data(pattern = 'OGTT') %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLT)
 
 # Plasma Fasting Glucose
 glu = 
   stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = &quot;|&quot;)) %&gt;% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLU)
 
 ############
@@ -996,7 +957,7 @@ L13 + CHOL - Cholesterol
 Glycohemoglobin
 </td>
 <td style="text-align:right;">
-10,025
+6,758
 </td>
 <td style="text-align:right;">
 7,445
@@ -1020,7 +981,7 @@ Glycohemoglobin
 6,979
 </td>
 <td style="text-align:right;">
-59,254
+55,987
 </td>
 </tr>
 <tr>
@@ -1217,6 +1178,181 @@ NA
 </tr>
 </tbody>
 </table>
+</div>
+<div id="downloading-and-reading-mortality-data" class="section level2">
+<h2>Downloading and reading mortality data</h2>
+<p>The mortality files were downloaded from <a href="ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/">here</a>. The codes below are based on the R code provided by in <a href="https://www.cdc.gov/nchs/data-linkage/mortality-public.htm">Linked mortality files website</a>.</p>
+<pre class="r"><code># Downloaded the files and saved in a local repo:
+data_path = '../3 - Databases/mortality_data'
+
+# Function to read the downloaded mortality dataset based on code from LMF website:
+read_mortality_data = function(data_name){
+  
+  cycle = substr(data_name,40,48)
+    
+  dsn &lt;- 
+    read_fwf(file=data_name,
+                  col_types = &quot;ciiiiiiiddii&quot;,
+                  fwf_cols(publicid = c(1,14),
+                           eligstat = c(15,15),
+                           mortstat = c(16,16),
+                           ucod_leading = c(17,19),
+                           diabetes = c(20,20),
+                           hyperten = c(21,21),
+                           dodqtr = c(22,22),
+                           dodyear = c(23,26),
+                           wgt_new = c(27,34),
+                           sa_wgt_new = c(35,42),
+                           permth_int = c(43,45),
+                           permth_exm = c(46,48)
+                  ),
+                  na = &quot;.&quot;) %&gt;% 
+    mutate(SEQN = as.numeric(substr(publicid,1,5)), # create the ID (SEQN) for the NHANES surveys
+           cycle = sub(&quot;_&quot;, &quot;-&quot;, cycle)) %&gt;% 
+    select(-c(publicid, dodqtr, dodyear, wgt_new, sa_wgt_new)) # Drop NHIS variables
+  
+  return(dsn)
+
+}
+
+# Function to stack mortality datasets
+
+stack_mort_data = function(path){
+  
+  data_names = list.files(path = path)
+  
+  db = 
+    lapply(paste(path, data_names, sep = '/'), read_mortality_data) %&gt;% 
+    bind_rows()
+  
+  return(db)
+}
+
+
+mortality = stack_mort_data(path = data_path)
+
+############
+# CHECKING #
+############
+
+mortality %&gt;% 
+  group_by(cycle) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  bind_rows(data.frame(cycle = 'Total', n = dim(mortality)[1], stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;)) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+cycle
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+1999-2000
+</td>
+<td style="text-align:right;">
+9,965
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2001-2002
+</td>
+<td style="text-align:right;">
+11,039
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2003-2004
+</td>
+<td style="text-align:right;">
+10,122
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2005-2006
+</td>
+<td style="text-align:right;">
+10,348
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2007-2008
+</td>
+<td style="text-align:right;">
+10,149
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2009-2010
+</td>
+<td style="text-align:right;">
+10,537
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2011-2012
+</td>
+<td style="text-align:right;">
+9,756
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2013-2014
+</td>
+<td style="text-align:right;">
+10,175
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total
+</td>
+<td style="text-align:right;">
+82,091
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="merging-datasets" class="section level2">
+<h2>Merging datasets</h2>
+<pre class="r"><code>nhanes = 
+  demo %&gt;% 
+  left_join(bpq, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(bpx, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(chol, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(cot, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(diq, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(glu, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(glyc, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(hdl, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(mcq, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(ogt, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(rhq, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(smq, by = c('SEQN', 'cycle')) %&gt;% 
+  left_join(mortality, by = c('SEQN', 'cycle'))
+  
+saveRDS(nhanes, file = 'nhanes_mort_complete.rds')</code></pre>
+</div>
+<div id="selecting-study-population" class="section level2">
+<h2>Selecting study population</h2>
+</div>
+<div id="computing-sample-weights" class="section level2">
+<h2>Computing sample weights</h2>
 </div>
 </div>
 

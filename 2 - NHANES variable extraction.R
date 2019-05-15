@@ -25,10 +25,7 @@ stack_nhanes_data = function(path = data_path, pattern){
 demo = 
   stack_nhanes_data(pattern = 'DEMO') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,
@@ -44,10 +41,7 @@ demo =
 bpx = 
   stack_nhanes_data(pattern = 'BPX') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPXSY1,
          BPXSY2,
          BPXSY3,
@@ -66,10 +60,7 @@ bpx =
 bpq = 
   stack_nhanes_data(pattern = 'BPQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPQ080,
          BPQ020,
          BPQ030,
@@ -81,10 +72,7 @@ bpq =
 smq = 
   stack_nhanes_data(pattern = 'SMQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          SMQ020,
          SMQ040,
          SMQ050Q,
@@ -94,10 +82,7 @@ smq =
 diq = 
   stack_nhanes_data(pattern = 'DIQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          DIQ010,
          DIQ050,
          DIQ070,
@@ -108,10 +93,7 @@ diq =
 rhq = 
   stack_nhanes_data(pattern = 'RHQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RHQ031,
          RHD042,
          #RHQ135C,
@@ -143,10 +125,7 @@ rhq =
 chol = 
   stack_nhanes_data(pattern = paste(c('Lab13', 'l13_b', 'l13_c', 'TCHOL'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXTC,
          LBDHDL,
          LBXHDD)
@@ -155,40 +134,28 @@ chol =
 hdl = 
   stack_nhanes_data(pattern ='HDL') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBDHDD)
 
 # Cotinine 
 cot = 
   stack_nhanes_data(pattern = paste(c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'COTNAL_F', 'COTNAL_G', 'COT_H'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXCOT)
 
 # Glycohemoglobin 
 glyc = 
-  stack_nhanes_data(pattern = paste(c('LAB10', 'L10_B', 'L10_C', 'GHB'), collapse = "|")) %>% 
+  stack_nhanes_data(pattern = paste(c('LAB10.csv', 'L10_B', 'L10_C', 'GHB'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGH)
 
 # Medical Conditions 
 mcq = 
   stack_nhanes_data(pattern = 'MCQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          MCQ160A,
          MCQ180A,
          MCQ190)
@@ -197,20 +164,14 @@ mcq =
 ogt = 
   stack_nhanes_data(pattern = 'OGTT') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLT)
 
 # Plasma Fasting Glucose
 glu = 
   stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLU)
 
 

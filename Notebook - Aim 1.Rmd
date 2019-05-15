@@ -14,7 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Project Summary
+# Project Summary 
 
 ## Overview
 
@@ -67,7 +67,6 @@ CVD-specific death.
     + [Public-Use Data Dictionary](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-files-data-dictionary.pdf)
     + [Mortality Files](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/)
     
-
 ## Meetings
 
 Date: 11/04
@@ -227,10 +226,7 @@ stack_nhanes_data = function(path = data_path, pattern){
 demo = 
   stack_nhanes_data(pattern = 'DEMO') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,
@@ -246,10 +242,7 @@ demo =
 bpx = 
   stack_nhanes_data(pattern = 'BPX') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPXSY1,
          BPXSY2,
          BPXSY3,
@@ -268,10 +261,7 @@ bpx =
 bpq = 
   stack_nhanes_data(pattern = 'BPQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          BPQ080,
          BPQ020,
          BPQ030,
@@ -283,10 +273,7 @@ bpq =
 smq = 
   stack_nhanes_data(pattern = 'SMQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          SMQ020,
          SMQ040,
          SMQ050Q,
@@ -296,10 +283,7 @@ smq =
 diq = 
   stack_nhanes_data(pattern = 'DIQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          DIQ010,
          DIQ050,
          DIQ070,
@@ -310,10 +294,7 @@ diq =
 rhq = 
   stack_nhanes_data(pattern = 'RHQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          RHQ031,
          RHD042,
          #RHQ135C,
@@ -345,10 +326,7 @@ rhq =
 chol = 
   stack_nhanes_data(pattern = paste(c('Lab13', 'l13_b', 'l13_c', 'TCHOL'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXTC,
          LBDHDL,
          LBXHDD)
@@ -357,40 +335,28 @@ chol =
 hdl = 
   stack_nhanes_data(pattern ='HDL') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBDHDD)
 
 # Cotinine 
 cot = 
   stack_nhanes_data(pattern = paste(c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'COTNAL_F', 'COTNAL_G', 'COT_H'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXCOT)
 
 # Glycohemoglobin 
 glyc = 
-  stack_nhanes_data(pattern = paste(c('LAB10', 'L10_B', 'L10_C', 'GHB'), collapse = "|")) %>% 
+  stack_nhanes_data(pattern = paste(c('LAB10.csv', 'L10_B', 'L10_C', 'GHB'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGH)
 
 # Medical Conditions 
 mcq = 
   stack_nhanes_data(pattern = 'MCQ') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          MCQ160A,
          MCQ180A,
          MCQ190)
@@ -399,20 +365,14 @@ mcq =
 ogt = 
   stack_nhanes_data(pattern = 'OGTT') %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLT)
 
 # Plasma Fasting Glucose
 glu = 
   stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = "|")) %>% 
   select(SEQN,
-         file_name,
          cycle,
-         begin_year,
-         end_year,
          LBXGLU)
 
 ############
@@ -444,3 +404,107 @@ bind_rows('DEMO - Demographic and Weights' = demo,
   kable_styling()
 
 ```
+
+## Downloading and reading mortality data
+
+The mortality files were downloaded from [here](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/). The codes below are based on the R code provided by in [Linked mortality files website](https://www.cdc.gov/nchs/data-linkage/mortality-public.htm).
+
+```{r}
+
+# Downloaded the files and saved in a local repo:
+data_path = '../3 - Databases/mortality_data'
+
+# Function to read the downloaded mortality dataset based on code from LMF website:
+read_mortality_data = function(data_name){
+  
+  cycle = substr(data_name,40,48)
+    
+  dsn <- 
+    read_fwf(file=data_name,
+                  col_types = "ciiiiiiiddii",
+                  fwf_cols(publicid = c(1,14),
+                           eligstat = c(15,15),
+                           mortstat = c(16,16),
+                           ucod_leading = c(17,19),
+                           diabetes = c(20,20),
+                           hyperten = c(21,21),
+                           dodqtr = c(22,22),
+                           dodyear = c(23,26),
+                           wgt_new = c(27,34),
+                           sa_wgt_new = c(35,42),
+                           permth_int = c(43,45),
+                           permth_exm = c(46,48)
+                  ),
+                  na = ".") %>% 
+    mutate(SEQN = as.numeric(substr(publicid,1,5)), # create the ID (SEQN) for the NHANES surveys
+           cycle = sub("_", "-", cycle)) %>% 
+    select(-c(publicid, dodqtr, dodyear, wgt_new, sa_wgt_new)) # Drop NHIS variables
+  
+  return(dsn)
+
+}
+
+# Function to stack mortality datasets
+
+stack_mort_data = function(path){
+  
+  data_names = list.files(path = path)
+  
+  db = 
+    lapply(paste(path, data_names, sep = '/'), read_mortality_data) %>% 
+    bind_rows()
+  
+  return(db)
+}
+
+
+mortality = stack_mort_data(path = data_path)
+
+############
+# CHECKING #
+############
+
+mortality %>% 
+  group_by(cycle) %>% 
+  summarise(n = n()) %>% 
+  bind_rows(data.frame(cycle = 'Total', n = dim(mortality)[1], stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ",")) %>% 
+  kable_styling()
+
+```
+
+## Merging datasets
+
+PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.
+
+```{r}
+
+nhanes = 
+  demo %>% 
+  left_join(bpq, by = c('SEQN', 'cycle')) %>% 
+  left_join(bpx, by = c('SEQN', 'cycle')) %>% 
+  left_join(chol, by = c('SEQN', 'cycle')) %>% 
+  left_join(cot, by = c('SEQN', 'cycle')) %>% 
+  left_join(diq, by = c('SEQN', 'cycle')) %>% 
+  left_join(glu, by = c('SEQN', 'cycle')) %>% 
+  left_join(glyc, by = c('SEQN', 'cycle')) %>% 
+  left_join(hdl, by = c('SEQN', 'cycle')) %>% 
+  left_join(mcq, by = c('SEQN', 'cycle')) %>% 
+  left_join(ogt, by = c('SEQN', 'cycle')) %>% 
+  left_join(rhq, by = c('SEQN', 'cycle')) %>% 
+  left_join(smq, by = c('SEQN', 'cycle')) %>% 
+  left_join(mortality, by = c('SEQN', 'cycle'))
+  
+saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
+write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)
+
+```
+
+## Selecting study population
+
+```{r}
+
+
+```
+
+## Computing sample weights
