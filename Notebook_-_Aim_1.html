@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-05-15" />
+<meta name="date" content="2019-05-21" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>05/15/2019</em></h4>
+<h4 class="date"><em>05/21/2019</em></h4>
 
 </div>
 
@@ -376,40 +376,6 @@ div.tocify {
 </ul></li>
 </ul>
 </div>
-<div id="meetings" class="section level2">
-<h2>Meetings</h2>
-<p>Date: 11/04</p>
-<p>Questions:</p>
-<ul>
-<li>Is it possible to have a patient be in multiple surveys?</li>
-<li>Outcome: Time to CVD-specific death? What would be the time of origin?</li>
-</ul>
-<p>Date: 25/04</p>
-<p>To do for this meeting:</p>
-<ul>
-<li>Review documentation, email CDC - Sent an email to CDC</li>
-<li>Start creating codebook and compiling databases for exam and lab variables - First draft sent to Shivani (Has to include CVD information)
-<ul>
-<li>Race variable enough for our study?</li>
-<li>Should we collect the information on consumption of food, alcohol, coffe and cigarretes in past 30 minutes for SBP measures?</li>
-<li>Consider treated SBP if any (current) hypertension prescription?</li>
-<li>Inclusion criteria: At least one pregnancy or pregnancy with live birth?</li>
-<li>Should we exclude current pregnants?</li>
-<li>APOs: Gestational diabetes available from 2007-2016 and Preterm delivery, small weight at birth and breast feeding only available from 1999-2006. Are we going to split the cohort according to the APO information available?</li>
-</ul></li>
-<li>Review NHANES papers for smoking variable</li>
-</ul>
-<p>Questions:</p>
-<ul>
-<li>ACC/AHA PCE are gender and race specific. Are we going to do the analysis by race?</li>
-</ul>
-<p>Next steps:</p>
-<ul>
-<li>Start downloading and merging the NHANES databases (once years are decided)</li>
-<li>Understand how weights should be constructed</li>
-<li>Link mortality to dataset</li>
-</ul>
-</div>
 </div>
 <div id="data-assembly" class="section level1">
 <h1>Data Assembly</h1>
@@ -451,9 +417,11 @@ div.tocify {
 </table>
 <p>Next steps: Variable construction</p>
 </div>
-<div id="downloading-nhanes-data" class="section level2">
-<h2>Downloading NHANES data</h2>
-<p>Using the <a href="https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html">R package RNHANES</a> to download the datasets. Downloaded datasets (original) saved in Sharepoint.</p>
+<div id="data-extraction" class="section level2">
+<h2>Data extraction</h2>
+<div id="downloading-nhanes-data" class="section level3">
+<h3>Downloading NHANES data</h3>
+<p>Using the <a href="https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html">R package RNHANES</a> to download the datasets.</p>
 <pre class="r"><code>library(RNHANES)
 library(tidyverse)
 
@@ -524,8 +492,8 @@ nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)),
                  year = yr, 
                  destination = &quot;../3 - Databases/nhanes_data&quot;)</code></pre>
 </div>
-<div id="variable-extraction" class="section level2">
-<h2>Variable extraction</h2>
+<div id="variable-extraction" class="section level3">
+<h3>Variable extraction</h3>
 <p>Stack each variable and select variables of interest as described in Database and variable inventory file.</p>
 <pre class="r"><code># Path for the downloaded datasets
 data_path = '../3 - Databases/nhanes_data'
@@ -680,6 +648,11 @@ mcq =
   select(SEQN,
          cycle,
          MCQ160A,
+         MCQ160B,
+         MCQ160C,
+         MCQ160D,
+         MCQ160E,
+         MCQ160F,
          MCQ180A,
          MCQ190)
 
@@ -1179,8 +1152,8 @@ NA
 </tbody>
 </table>
 </div>
-<div id="downloading-and-reading-mortality-data" class="section level2">
-<h2>Downloading and reading mortality data</h2>
+<div id="downloading-and-reading-mortality-data" class="section level3">
+<h3>Downloading and reading mortality data</h3>
 <p>The mortality files were downloaded from <a href="ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/">here</a>. The codes below are based on the R code provided by in <a href="https://www.cdc.gov/nchs/data-linkage/mortality-public.htm">Linked mortality files website</a>.</p>
 <pre class="r"><code># Downloaded the files and saved in a local repo:
 data_path = '../3 - Databases/mortality_data'
@@ -1328,8 +1301,9 @@ Total
 </tbody>
 </table>
 </div>
-<div id="merging-datasets" class="section level2">
-<h2>Merging datasets</h2>
+<div id="merging-datasets" class="section level3">
+<h3>Merging datasets</h3>
+<p>PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.</p>
 <pre class="r"><code>nhanes = 
   demo %&gt;% 
   left_join(bpq, by = c('SEQN', 'cycle')) %&gt;% 
@@ -1346,13 +1320,454 @@ Total
   left_join(smq, by = c('SEQN', 'cycle')) %&gt;% 
   left_join(mortality, by = c('SEQN', 'cycle'))
   
-saveRDS(nhanes, file = 'nhanes_mort_complete.rds')</code></pre>
+saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
+write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)</code></pre>
 </div>
-<div id="selecting-study-population" class="section level2">
-<h2>Selecting study population</h2>
+<div id="selecting-study-population" class="section level3">
+<h3>Selecting study population</h3>
+<div id="study-population" class="section level4">
+<h4>Study population</h4>
+<ul>
+<li>Women (RIAGENDR)</li>
+<li>Age 40-79 (RIDAGEYR)</li>
+<li>No history of cardiovascular disease at baseline including:
+<ul>
+<li>Congestive Heart Failure (MCQ160B)</li>
+<li>Coronary Heart Disease (MCQ160C)</li>
+<li>Angina (MCQ160D)</li>
+<li>Heart Attack (MCQ160E)</li>
+<li>Stroke (MCQ160F)</li>
+</ul></li>
+<li>No pregnancy history, including current pregnancy (RHD130/RHQ131)</li>
+</ul>
 </div>
-<div id="computing-sample-weights" class="section level2">
-<h2>Computing sample weights</h2>
+<div id="gender-distribution" class="section level4">
+<h4>Gender distribution</h4>
+<pre class="r"><code>nhanes %&gt;% 
+  mutate(RIAGENDR = car::Recode(RIAGENDR, &quot;1 = 'Male'; 2 = 'Female'&quot;)) %&gt;% 
+  group_by(RIAGENDR) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  mutate(freq = n/sum(n)*100) %&gt;% 
+  bind_rows(data.frame(RIAGENDR = 'Total', n = dim(nhanes)[1], freq = 100, stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+RIAGENDR
+</th>
+<th style="text-align:center;">
+n
+</th>
+<th style="text-align:center;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Female
+</td>
+<td style="text-align:center;">
+41,647
+</td>
+<td style="text-align:center;">
+50.73
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Male
+</td>
+<td style="text-align:center;">
+40,444
+</td>
+<td style="text-align:center;">
+49.27
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+82,091
+</td>
+<td style="text-align:center;">
+100.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="selecting-females" class="section level4">
+<h4>Selecting Females:</h4>
+<pre class="r"><code>cvd = 
+  nhanes %&gt;% 
+  filter(RIAGENDR == 2) # Female
+
+cvd %&gt;% 
+  mutate(RIDAGEYR_cat = ifelse(RIDAGEYR &lt; 40, '&lt; 40',
+                               ifelse(RIDAGEYR &gt; 79, '&gt; 79', '40 - 79'))) %&gt;% 
+  group_by(RIDAGEYR_cat) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  mutate(freq = n/sum(n)*100) %&gt;% 
+  bind_rows(data.frame(RIDAGEYR_cat = 'Total', n = dim(cvd)[1], freq = 100, stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+RIDAGEYR_cat
+</th>
+<th style="text-align:center;">
+n
+</th>
+<th style="text-align:center;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+&lt; 40
+</td>
+<td style="text-align:center;">
+27,002
+</td>
+<td style="text-align:center;">
+64.84
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+&gt; 79
+</td>
+<td style="text-align:center;">
+1,899
+</td>
+<td style="text-align:center;">
+4.56
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+40 - 79
+</td>
+<td style="text-align:center;">
+12,746
+</td>
+<td style="text-align:center;">
+30.60
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+41,647
+</td>
+<td style="text-align:center;">
+100.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="selecting-ages-40-79" class="section level4">
+<h4>Selecting ages 40-79:</h4>
+<pre class="r"><code>cvd2 = 
+  cvd %&gt;% 
+  filter(RIDAGEYR &gt;= 40,
+         RIDAGEYR &lt;= 79) %&gt;% # Ages 40 - 79
+    mutate_at(vars(MCQ160B,
+                 MCQ160C,
+                 MCQ160D,
+                 MCQ160E,
+                 MCQ160F),
+            funs(ifelse(. == 1, 1, 0))) %&gt;% 
+  rowwise %&gt;% 
+  mutate(MCQ160_TOTAL = sum(MCQ160B,
+                            MCQ160C,
+                            MCQ160D,
+                            MCQ160E,
+                            MCQ160F),
+         CVD = ifelse(MCQ160_TOTAL &gt; 0, 'Yes', 'No')) %&gt;% 
+  ungroup
+
+cvd2 %&gt;% 
+  group_by(CVD) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  mutate(freq = n/sum(n)*100) %&gt;% 
+  bind_rows(data.frame(CVD = 'Total', n = dim(cvd2)[1], freq = 100, stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+CVD
+</th>
+<th style="text-align:center;">
+n
+</th>
+<th style="text-align:center;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+No
+</td>
+<td style="text-align:center;">
+11,188
+</td>
+<td style="text-align:center;">
+87.78
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+1,557
+</td>
+<td style="text-align:center;">
+12.22
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.01
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+12,746
+</td>
+<td style="text-align:center;">
+100.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="excluding-women-with-history-of-cvd" class="section level4">
+<h4>Excluding women with history of CVD:</h4>
+<pre class="r"><code>cvd3 =
+  cvd2 %&gt;%
+  filter(CVD == 'No')
+  
+cvd3 %&gt;% 
+  group_by(RHD130) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  mutate(freq = n/sum(n)*100) %&gt;% 
+  mutate(RHD130 = car::Recode(RHD130, &quot;1 = 'Yes'; 2 = 'No'; 7 = 'Refused'; 9 = 'Do not know'&quot;)) %&gt;%
+  bind_rows(data.frame(RHD130 = 'Total', n = dim(cvd3)[1], freq = 100, stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+RHD130
+</th>
+<th style="text-align:center;">
+n
+</th>
+<th style="text-align:center;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+2,030
+</td>
+<td style="text-align:center;">
+18.14
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+No
+</td>
+<td style="text-align:center;">
+172
+</td>
+<td style="text-align:center;">
+1.54
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Do not know
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.01
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+8,985
+</td>
+<td style="text-align:center;">
+80.31
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+11,188
+</td>
+<td style="text-align:center;">
+100.00
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>cvd3 %&gt;% 
+  group_by(RHQ131) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  mutate(freq = n/sum(n)*100) %&gt;% 
+  mutate(RHQ131 = car::Recode(RHQ131, &quot;1 = 'Yes'; 2 = 'No'; 7 = 'Refused'; 9 = 'Do not know'&quot;)) %&gt;% 
+  bind_rows(data.frame(RHQ131 = 'Total', n = dim(cvd3)[1], freq = 100, stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+RHQ131
+</th>
+<th style="text-align:center;">
+n
+</th>
+<th style="text-align:center;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+6,973
+</td>
+<td style="text-align:center;">
+62.33
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+No
+</td>
+<td style="text-align:center;">
+658
+</td>
+<td style="text-align:center;">
+5.88
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Refused
+</td>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+0.03
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Do not know
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+0.02
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+3,552
+</td>
+<td style="text-align:center;">
+31.75
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+11,188
+</td>
+<td style="text-align:center;">
+100.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="selecting-women-with-pregnancy-history" class="section level4">
+<h4>Selecting women with pregnancy history:</h4>
+<pre class="r"><code>cvd4 =
+  cvd3 %&gt;%
+  filter(RHQ131 == 1 | RHD130 == 1) %&gt;% 
+  select(-c(MCQ160_TOTAL, CVD))</code></pre>
+<p>Final target population has 9003 observations and 84 variables extracted from NHANES and NDI mortality files.</p>
+</div>
+</div>
+</div>
+<div id="variable-construction" class="section level2">
+<h2>Variable construction</h2>
+<div id="variable-construction-1" class="section level3">
+<h3>Variable construction</h3>
+</div>
+<div id="outcome-1" class="section level3">
+<h3>Outcome</h3>
+</div>
+<div id="sample-weights" class="section level3">
+<h3>Sample weights</h3>
+</div>
 </div>
 </div>
 

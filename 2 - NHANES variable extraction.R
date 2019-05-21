@@ -157,6 +157,11 @@ mcq =
   select(SEQN,
          cycle,
          MCQ160A,
+         MCQ160B,
+         MCQ160C,
+         MCQ160D,
+         MCQ160E,
+         MCQ160F,
          MCQ180A,
          MCQ190)
 

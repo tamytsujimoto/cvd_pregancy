@@ -67,39 +67,6 @@ CVD-specific death.
     + [Public-Use Data Dictionary](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-files-data-dictionary.pdf)
     + [Mortality Files](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/)
     
-## Meetings
-
-Date: 11/04
-
-Questions:
-
-* Is it possible to have a patient be in multiple surveys?
-* Outcome: Time to CVD-specific death? What would be the time of origin?
-
-Date: 25/04
-
-To do for this meeting:
-
-* Review documentation, email CDC - Sent an email to CDC
-* Start creating codebook and compiling databases for exam and lab variables - First draft sent to Shivani (Has to include CVD information)
-    + Race variable enough for our study?
-    + Should we collect the information on consumption of food, alcohol, coffe and cigarretes in past 30 minutes for SBP measures?
-    + Consider treated SBP if any (current) hypertension prescription?
-    + Inclusion criteria: At least one pregnancy or pregnancy with live birth?
-    + Should we exclude current pregnants?
-    + APOs: Gestational diabetes available from 2007-2016 and Preterm delivery, small weight at birth and breast feeding only available from 1999-2006. Are we going to split the cohort according to the APO information available?
-* Review NHANES papers for smoking variable
-
-Questions:
-
-* ACC/AHA PCE are gender and race specific. Are we going to do the analysis by race?
-
-Next steps:
-
-* Start downloading and merging the NHANES databases (once years are decided)
-* Understand how weights should be constructed
-* Link mortality to dataset
-
 
 # Data Assembly
 
@@ -116,9 +83,11 @@ Next steps:
 
 Next steps: Variable construction
 
-## Downloading NHANES data
+## Data extraction 
 
-Using the [R package RNHANES](https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html) to download the datasets. Downloaded datasets (original) saved in Sharepoint.
+### Downloading NHANES data
+
+Using the [R package RNHANES](https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html) to download the datasets. 
 
 ```{r eval=FALSE}
 
@@ -193,7 +162,7 @@ nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)),
                  destination = "../3 - Databases/nhanes_data")
 ```
 
-## Variable extraction
+### Variable extraction
 
 Stack each variable and select variables of interest as described in Database and variable inventory file.
 
@@ -201,6 +170,7 @@ Stack each variable and select variables of interest as described in Database an
 library(tidyverse)
 library(knitr)
 library(kableExtra)
+library(summarytools)
 ```
 
 ```{r}
@@ -358,6 +328,11 @@ mcq =
   select(SEQN,
          cycle,
          MCQ160A,
+         MCQ160B,
+         MCQ160C,
+         MCQ160D,
+         MCQ160E,
+         MCQ160F,
          MCQ180A,
          MCQ190)
 
@@ -405,7 +380,7 @@ bind_rows('DEMO - Demographic and Weights' = demo,
 
 ```
 
-## Downloading and reading mortality data
+### Downloading and reading mortality data
 
 The mortality files were downloaded from [here](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/). The codes below are based on the R code provided by in [Linked mortality files website](https://www.cdc.gov/nchs/data-linkage/mortality-public.htm).
 
@@ -473,7 +448,7 @@ mortality %>%
 
 ```
 
-## Merging datasets
+### Merging datasets
 
 PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.
 
@@ -500,11 +475,129 @@ write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)
 
 ```
 
-## Selecting study population
+### Selecting study population
+
+#### Study population
+
+* Women (RIAGENDR) 
+* Age 40-79 (RIDAGEYR)
+* No history of cardiovascular disease at baseline including:
+    + Congestive Heart Failure (MCQ160B)
+    + Coronary Heart Disease (MCQ160C)
+    + Angina (MCQ160D)
+    + Heart Attack (MCQ160E)
+    + Stroke (MCQ160F)
+* No pregnancy history, including current pregnancy (RHD130/RHQ131)
+
+#### Gender distribution
 
 ```{r}
 
+nhanes %>% 
+  mutate(RIAGENDR = car::Recode(RIAGENDR, "1 = 'Male'; 2 = 'Female'")) %>% 
+  group_by(RIAGENDR) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n/sum(n)*100) %>% 
+  bind_rows(data.frame(RIAGENDR = 'Total', n = dim(nhanes)[1], freq = 100, stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
 
 ```
 
-## Computing sample weights
+#### Selecting Females:
+
+```{r}
+cvd = 
+  nhanes %>% 
+  filter(RIAGENDR == 2) # Female
+
+cvd %>% 
+  mutate(RIDAGEYR_cat = ifelse(RIDAGEYR < 40, '< 40',
+                               ifelse(RIDAGEYR > 79, '> 79', '40 - 79'))) %>% 
+  group_by(RIDAGEYR_cat) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n/sum(n)*100) %>% 
+  bind_rows(data.frame(RIDAGEYR_cat = 'Total', n = dim(cvd)[1], freq = 100, stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+```
+
+#### Selecting ages 40-79:
+
+```{r}
+cvd2 = 
+  cvd %>% 
+  filter(RIDAGEYR >= 40,
+         RIDAGEYR <= 79) %>% # Ages 40 - 79
+    mutate_at(vars(MCQ160B,
+                 MCQ160C,
+                 MCQ160D,
+                 MCQ160E,
+                 MCQ160F),
+            funs(ifelse(. == 1, 1, 0))) %>% 
+  rowwise %>% 
+  mutate(MCQ160_TOTAL = sum(MCQ160B,
+                            MCQ160C,
+                            MCQ160D,
+                            MCQ160E,
+                            MCQ160F),
+         CVD = ifelse(MCQ160_TOTAL > 0, 'Yes', 'No')) %>% 
+  ungroup
+
+cvd2 %>% 
+  group_by(CVD) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n/sum(n)*100) %>% 
+  bind_rows(data.frame(CVD = 'Total', n = dim(cvd2)[1], freq = 100, stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+```
+
+#### Excluding women with history of CVD:
+
+```{r}
+cvd3 =
+  cvd2 %>%
+  filter(CVD == 'No')
+  
+cvd3 %>% 
+  group_by(RHD130) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n/sum(n)*100) %>% 
+  mutate(RHD130 = car::Recode(RHD130, "1 = 'Yes'; 2 = 'No'; 7 = 'Refused'; 9 = 'Do not know'")) %>%
+  bind_rows(data.frame(RHD130 = 'Total', n = dim(cvd3)[1], freq = 100, stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+cvd3 %>% 
+  group_by(RHQ131) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n/sum(n)*100) %>% 
+  mutate(RHQ131 = car::Recode(RHQ131, "1 = 'Yes'; 2 = 'No'; 7 = 'Refused'; 9 = 'Do not know'")) %>% 
+  bind_rows(data.frame(RHQ131 = 'Total', n = dim(cvd3)[1], freq = 100, stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+```
+
+#### Selecting women with pregnancy history:
+
+```{r}
+cvd4 =
+  cvd3 %>%
+  filter(RHQ131 == 1 | RHD130 == 1) %>% 
+  select(-c(MCQ160_TOTAL, CVD))
+
+```
+
+Final target population has `r dim(cvd4)[1]` observations and `r dim(cvd4)[2]` variables extracted from NHANES and NDI mortality files.
+
+## Variable construction
+
+### Variable construction
+
+### Outcome
+
+### Sample weights

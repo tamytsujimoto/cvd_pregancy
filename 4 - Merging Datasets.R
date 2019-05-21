@@ -19,3 +19,5 @@ nhanes =
   left_join(mortality, by = c('SEQN', 'cycle'))
   
 saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
+
+nhanes = readRDS('nhanes_mort_complete.rds')
