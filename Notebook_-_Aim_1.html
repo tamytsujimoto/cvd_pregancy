@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-05-23" />
+<meta name="date" content="2019-05-29" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>05/23/2019</em></h4>
+<h4 class="date"><em>05/29/2019</em></h4>
 
 </div>
 
@@ -1571,6 +1571,10 @@ Total
 </div>
 <div id="excluding-women-with-history-of-cvd" class="section level4">
 <h4>Excluding women with history of CVD:</h4>
+<ul>
+<li><p>RHD130 - History of Pregnancy - The next questions are about {your/SP’s} pregnancy history. {Have you/Has SP ever been pregnant? Please include (current pregnancy,) live births, miscarriages, stillbirths, tubal pregnancies and abortions. - 1999 to 2002</p></li>
+<li><p>RHD131 - History of Pregnancy - The next questions are about {your/SP’s} pregnancy history. {Have you/Has SP ever been pregnant? Please include (current pregnancy,) live births, miscarriages, stillbirths, tubal pregnancies and abortions. - 2003 to 2016</p></li>
+</ul>
 <pre class="r"><code>cvd3 =
   cvd2 %&gt;%
   filter(CVD == 'No')
@@ -1746,6 +1750,193 @@ Total
 </tr>
 </tbody>
 </table>
+<p>Obs: Missings from RHD130 and RHQ131 due to availability across cycles:</p>
+<pre class="r"><code>cvd3 %&gt;% 
+  filter(is.na(RHD130)) %&gt;% 
+  group_by(cycle) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  bind_rows(data.frame(cycle = 'Total', n = sum(.$n), stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+cycle
+</th>
+<th style="text-align:center;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+1999-2000
+</td>
+<td style="text-align:center;">
+151
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2001-2002
+</td>
+<td style="text-align:center;">
+152
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2003-2004
+</td>
+<td style="text-align:center;">
+1,180
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2005-2006
+</td>
+<td style="text-align:center;">
+1,140
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2007-2008
+</td>
+<td style="text-align:center;">
+1,587
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2009-2010
+</td>
+<td style="text-align:center;">
+1,692
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2011-2012
+</td>
+<td style="text-align:center;">
+1,463
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2013-2014
+</td>
+<td style="text-align:center;">
+1,620
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+8,985
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>cvd3 %&gt;% 
+  filter(is.na(RHQ131)) %&gt;% 
+  group_by(cycle) %&gt;% 
+  summarise(n = n()) %&gt;% 
+  bind_rows(data.frame(cycle = 'Total', n = sum(.$n), stringsAsFactors = FALSE)) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+cycle
+</th>
+<th style="text-align:center;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+1999-2000
+</td>
+<td style="text-align:center;">
+1,232
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2001-2002
+</td>
+<td style="text-align:center;">
+1,274
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2003-2004
+</td>
+<td style="text-align:center;">
+142
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2005-2006
+</td>
+<td style="text-align:center;">
+111
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2007-2008
+</td>
+<td style="text-align:center;">
+155
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2009-2010
+</td>
+<td style="text-align:center;">
+235
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2011-2012
+</td>
+<td style="text-align:center;">
+224
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2013-2014
+</td>
+<td style="text-align:center;">
+179
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total
+</td>
+<td style="text-align:center;">
+3,552
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="selecting-women-with-pregnancy-history" class="section level4">
 <h4>Selecting women with pregnancy history:</h4>
@@ -1753,6 +1944,15 @@ Total
   cvd3 %&gt;%
   filter(RHQ131 == 1 | RHD130 == 1) %&gt;% 
   select(-c(MCQ160_TOTAL, CVD))</code></pre>
+<p>Final dataset:</p>
+<pre class="r"><code>cvd_data = 
+  nhanes %&gt;% 
+  filter(RIAGENDR == 2) %&gt;% # Females
+  filter(RIDAGEYR &gt;= 40, RIDAGEYR &lt;= 79) %&gt;% # Age 40-79
+  filter(MCQ160B != 1, MCQ160C != 1, MCQ160D != 1, MCQ160E != 1, MCQ160F != 1) %&gt;% # No CVD history
+  filter(RHQ131 == 1 | RHD130 == 1)
+
+saveRDS(cvd_data, file = 'cvd_data.rds')</code></pre>
 <p>Final target population has 9003 observations and 84 variables extracted from NHANES and NDI mortality files.</p>
 </div>
 </div>

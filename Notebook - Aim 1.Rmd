@@ -557,6 +557,10 @@ cvd2 %>%
 
 #### Excluding women with history of CVD:
 
+* RHD130 - History of Pregnancy - The next questions are about {your/SP's} pregnancy history. {Have you/Has SP ever been pregnant? Please include (current pregnancy,) live births, miscarriages, stillbirths, tubal pregnancies and abortions. - 1999 to 2002
+
+* RHD131 - History of Pregnancy - The next questions are about {your/SP's} pregnancy history. {Have you/Has SP ever been pregnant? Please include (current pregnancy,) live births, miscarriages, stillbirths, tubal pregnancies and abortions. - 2003 to 2016
+
 ```{r}
 cvd3 =
   cvd2 %>%
@@ -582,6 +586,28 @@ cvd3 %>%
 
 ```
 
+Obs: Missings from RHD130 and RHQ131 due to availability across cycles:
+
+```{r}
+
+cvd3 %>% 
+  filter(is.na(RHD130)) %>% 
+  group_by(cycle) %>% 
+  summarise(n = n()) %>% 
+  bind_rows(data.frame(cycle = 'Total', n = sum(.$n), stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+cvd3 %>% 
+  filter(is.na(RHQ131)) %>% 
+  group_by(cycle) %>% 
+  summarise(n = n()) %>% 
+  bind_rows(data.frame(cycle = 'Total', n = sum(.$n), stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+```
+
 #### Selecting women with pregnancy history:
 
 ```{r}
@@ -592,7 +618,21 @@ cvd4 =
 
 ```
 
-Final target population has `r dim(cvd4)[1]` observations and `r dim(cvd4)[2]` variables extracted from NHANES and NDI mortality files.
+Final dataset:
+
+```{r}
+
+cvd_data = 
+  nhanes %>% 
+  filter(RIAGENDR == 2) %>% # Females
+  filter(RIDAGEYR >= 40, RIDAGEYR <= 79) %>% # Age 40-79
+  filter(MCQ160B != 1, MCQ160C != 1, MCQ160D != 1, MCQ160E != 1, MCQ160F != 1) %>% # No CVD history
+  filter(RHQ131 == 1 | RHD130 == 1)
+
+saveRDS(cvd_data, file = 'cvd_data.rds')
+```
+
+Final target population has `r dim(cvd_data)[1]` observations and `r dim(cvd_data)[2]` variables extracted from NHANES and NDI mortality files.
 
 ## Variable construction
 
