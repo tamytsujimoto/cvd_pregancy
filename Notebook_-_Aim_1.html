@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-05-29" />
+<meta name="date" content="2019-06-12" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>05/29/2019</em></h4>
+<h4 class="date"><em>06/12/2019</em></h4>
 
 </div>
 
@@ -524,6 +524,19 @@ demo =
          RIDAGEYR,
          RIDAGEMN,
          RIDAGEEX,
+         DMQMILIT,
+         DMDBORN,
+         DMDCITZN,
+         DMDYRSUS,
+         DMDEDUC2,
+         DMDMARTL,
+         DMDHHSIZ,
+         DMDFMSIZ,
+         INDHHINC,
+         INDHHIN2,
+         INDFMINC,
+         INDFMIN2,
+         INDFMPIR,
          RIDEXPRG,
          WTINT2YR,
          WTMEC2YR)
@@ -575,6 +588,9 @@ diq =
   select(SEQN,
          cycle,
          DIQ010,
+         DIQ040Q,
+         DID040Q,
+         DID040,
          DIQ050,
          DIQ070,
          DID070,
@@ -585,18 +601,17 @@ rhq =
   stack_nhanes_data(pattern = 'RHQ') %&gt;% 
   select(SEQN,
          cycle,
+         RHQ030,
          RHQ031,
          RHD042,
-         #RHQ135C,
          RHD152,
-         #RHQ165,
          RHQ166,
          RHQ169,
          RHQ171,
-         #RHQ175,
          RHQ180,
+         RHD180,
          RHQ190,
-         #RHQ195,
+         RHD190,
          RHD130,
          RHQ131,
          RHQ140,
@@ -605,12 +620,33 @@ rhq =
          RHQ160,
          RHD170,
          RHQ171,
+         RHQ200,
          RHD270,
          RHQ250,
          RHQ260,
          RHQ210,
          RHD230,
-         RHQ162)
+         RHQ162,
+         RHQ163,
+         RHQ010,
+         RHQ060,
+         RHQ420,
+         RHQ540,
+         RHQ570,
+         RHQ574,
+         RHQ596,
+         RHD440,
+         RHD442,
+         RHQ172,
+         RHQ180,
+         RHD180,
+         RHQ210,
+         RHQ205,
+         RHQ300,
+         RHQ310,
+         RHQ305,
+         RHQ330,
+         RHQ332)
 
 # Cholesterol 
 chol = 
@@ -1942,7 +1978,7 @@ Total
 <h4>Selecting women with pregnancy history:</h4>
 <pre class="r"><code>cvd4 =
   cvd3 %&gt;%
-  filter(RHQ131 == 1 | RHD130 == 1) %&gt;% 
+  filter(RHQ140 == 1 | RHQ141 == 1 | RHD143 == 1 | RHQ131 == 1 | RHD130 == 1) %&gt;% 
   select(-c(MCQ160_TOTAL, CVD))</code></pre>
 <p>Final dataset:</p>
 <pre class="r"><code>cvd_data = 
@@ -1950,10 +1986,10 @@ Total
   filter(RIAGENDR == 2) %&gt;% # Females
   filter(RIDAGEYR &gt;= 40, RIDAGEYR &lt;= 79) %&gt;% # Age 40-79
   filter(MCQ160B != 1, MCQ160C != 1, MCQ160D != 1, MCQ160E != 1, MCQ160F != 1) %&gt;% # No CVD history
-  filter(RHQ131 == 1 | RHD130 == 1)
+  filter(RHQ140 == 1 | RHQ141 == 1 | RHD143 == 1 | RHQ131 == 1 | RHD130 == 1) # Pregnancy history (including current)
 
 saveRDS(cvd_data, file = 'cvd_data.rds')</code></pre>
-<p>Final target population has 9003 observations and 84 variables extracted from NHANES and NDI mortality files.</p>
+<p>Final target population has 9003 observations and 121 variables extracted from NHANES and NDI mortality files.</p>
 </div>
 </div>
 </div>

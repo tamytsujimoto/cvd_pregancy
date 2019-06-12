@@ -204,6 +204,19 @@ demo =
          RIDAGEYR,
          RIDAGEMN,
          RIDAGEEX,
+         DMQMILIT,
+         DMDBORN,
+         DMDCITZN,
+         DMDYRSUS,
+         DMDEDUC2,
+         DMDMARTL,
+         DMDHHSIZ,
+         DMDFMSIZ,
+         INDHHINC,
+         INDHHIN2,
+         INDFMINC,
+         INDFMIN2,
+         INDFMPIR,
          RIDEXPRG,
          WTINT2YR,
          WTMEC2YR)
@@ -255,6 +268,9 @@ diq =
   select(SEQN,
          cycle,
          DIQ010,
+         DIQ040Q,
+         DID040Q,
+         DID040,
          DIQ050,
          DIQ070,
          DID070,
@@ -265,18 +281,17 @@ rhq =
   stack_nhanes_data(pattern = 'RHQ') %>% 
   select(SEQN,
          cycle,
+         RHQ030,
          RHQ031,
          RHD042,
-         #RHQ135C,
          RHD152,
-         #RHQ165,
          RHQ166,
          RHQ169,
          RHQ171,
-         #RHQ175,
          RHQ180,
+         RHD180,
          RHQ190,
-         #RHQ195,
+         RHD190,
          RHD130,
          RHQ131,
          RHQ140,
@@ -285,12 +300,33 @@ rhq =
          RHQ160,
          RHD170,
          RHQ171,
+         RHQ200,
          RHD270,
          RHQ250,
          RHQ260,
          RHQ210,
          RHD230,
-         RHQ162)
+         RHQ162,
+         RHQ163,
+         RHQ010,
+         RHQ060,
+         RHQ420,
+         RHQ540,
+         RHQ570,
+         RHQ574,
+         RHQ596,
+         RHD440,
+         RHD442,
+         RHQ172,
+         RHQ180,
+         RHD180,
+         RHQ210,
+         RHQ205,
+         RHQ300,
+         RHQ310,
+         RHQ305,
+         RHQ330,
+         RHQ332)
 
 # Cholesterol 
 chol = 
@@ -610,14 +646,6 @@ cvd3 %>%
 
 #### Selecting women with pregnancy history:
 
-```{r}
-cvd4 =
-  cvd3 %>%
-  filter(RHQ131 == 1 | RHD130 == 1) %>% 
-  select(-c(MCQ160_TOTAL, CVD))
-
-```
-
 Final dataset:
 
 ```{r}
@@ -627,7 +655,7 @@ cvd_data =
   filter(RIAGENDR == 2) %>% # Females
   filter(RIDAGEYR >= 40, RIDAGEYR <= 79) %>% # Age 40-79
   filter(MCQ160B != 1, MCQ160C != 1, MCQ160D != 1, MCQ160E != 1, MCQ160F != 1) %>% # No CVD history
-  filter(RHQ131 == 1 | RHD130 == 1)
+  filter(RHQ140 == 1 | RHQ141 == 1 | RHD143 == 1 | RHQ131 == 1 | RHD130 == 1) # Pregnancy history (including current)
 
 saveRDS(cvd_data, file = 'cvd_data.rds')
 ```
