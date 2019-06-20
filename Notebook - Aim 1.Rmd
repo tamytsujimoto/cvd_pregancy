@@ -671,10 +671,153 @@ saveRDS(cvd_data, file = 'cvd_data.rds')
 
 Final target population has `r dim(cvd_data)[1]` observations and `r dim(cvd_data)[2]` variables extracted from NHANES and NDI mortality files.
 
+## Data checks
+
+### Blood pressure 
+
+1. Rule provided in [Ortega et al](https://academic.oup.com/ajh/article/31/8/886/4955829)
+2. Rule provided by CDC_NHANES from [physician’s manual](https://wwwn.cdc.gov/nchs/data/nhanes/1999-2000/manuals/pe.pdf):
+    + If only one blood pressure reading was obtained, that reading is the average. 
+    + If there is more than one blood pressure reading, the first reading is always excluded from the average. 
+    + If only two blood pressure readings were obtained, the second blood pressure reading is the average. 
+    + If all diastolic readings were zero, then the average would be zero. 
+        + Exception: If there is one diastolic reading of zero and one (or more) with a number above zero, the diastolic reading with zero is not used to calculate the diastolic average. 
+    + If two out of three are zero, the one diastolic reading that is not zero is used to calculate the diastolic average. 
+
+
+**Systolic BP**
+
+```{r}
+
+# SY BP #
+
+bpx_check = 
+  cvd_data %>% 
+  select(BPXSY1,
+         BPXSY2,
+         BPXSY3,
+         BPXSY4,
+         BPXSAR) %>% 
+  filter(!is.na(BPXSAR)) %>% 
+  rowwise %>% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(ifelse(. == 0, NA, .))) %>% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(flag = ifelse(is.na(.), 0, 1))) %>% 
+  mutate(bpx_flag_tot = sum(BPXSY1_flag, BPXSY2_flag, BPXSY3_flag, BPXSY4_flag),
+         bpx_avg1 = mean(c(BPXSY1,BPXSY2,BPXSY3,BPXSY4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY2_flag == 1, BPXSY2,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 & BPXSY3_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY3_flag == 1, (BPXSY2 + BPXSY3)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY4_flag == 1, (BPXSY2 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY2_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2, NA))))))))))),
+         diff1 = (BPXSAR - bpx_avg1)^2,
+         diff2 = (BPXSAR - bpx_avg2)^2) %>% 
+  ungroup
+                    
+fivenum(bpx_check$diff1)
+fivenum(bpx_check$diff2)   
+
+```
+
+Using the rule provided by CDC-NHANES matches with the average variable from 1999-2002
+
+**Diastolic BP**
+
+```{r}
+
+# DI BP #
+
+bpx_check = 
+  cvd_data %>% 
+  select(BPXDI1,
+         BPXDI2,
+         BPXDI3,
+         BPXDI4,
+         BPXDAR) %>% 
+  filter(!is.na(BPXDAR)) %>% 
+  rowwise %>% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(ifelse(. == 0, NA, .))) %>% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(flag = ifelse(is.na(.), 0, 1))) %>% 
+  mutate(bpx_flag_tot = sum(BPXDI1_flag, BPXDI2_flag, BPXDI3_flag, BPXDI4_flag),
+         bpx_avg1 = mean(c(BPXDI1,BPXDI2,BPXDI3,BPXDI4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI2_flag == 1, BPXDI2,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 & BPXDI3_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI3_flag == 1, (BPXDI2 + BPXDI3)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI4_flag == 1, (BPXDI2 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI2_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2, NA))))))))))),
+         diff1 = (BPXDAR - bpx_avg1)^2,
+         diff2 = (BPXDAR - bpx_avg2)^2) %>% 
+  ungroup
+
+fivenum(bpx_check$diff1)
+fivenum(bpx_check$diff2)
+
+# inconsistencies
+bpx_check %>% 
+  filter(diff2 > 0) %>% 
+  glimpse
+
+```
+
+Only 3 observations out of `r dim(bpx_check)[1]` not matching the rule from CDC.
+
 ## Variable construction
+
+### Sample weights
+
+**Analytic Considerations - Survey Sample Weights**
+
+References: 
+
+- [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+
+- [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+*Apropriate sample weights *
+
+Various sample weights (interview, examination, and subsample) are available on the data release files. Use of the correct sample weight for NHANES analyses is extremely important and depends on the variables being used. A good general guideline is to use the ‘‘least common denominator’’ approach. With this approach, the analyst checks the variables of interest. The variable that was collected on the smallest number of persons is the least common denominator, and the sample weight that applies to that variable is the appropriate one to use for that particular analysis.
+
+Sample weights
+
+- 1999-2000: Based on 1990 U.S. census 
+- 2001-2014: Based on 2000 U.S. census 
+
+*Combining sample weights*
+
+When survey cycles are combined and the weights are constructed appropriately, the estimates will be representative of the U.S. civilian noninstitutionalized population at the midpoint of the combined survey period, and the sum of combined weights should be reasonably close to an
+independent estimate of that midpoint population.
+
+A new sample weight can be calculated based on the sample weights of the combined survey cycles. When combining two or more 2-year cycles from 2001–2002 onward, new multi-year sample weights can be computed by simply dividing the 2-year sample weights by the number of 2-year cycles in the analysis. For example, to analyze data for 2011-2016, divide the three 2-year sample weights by three to obtain the 6-year combined sample weight.
+
+Because different population bases were used, the 2-year weights for 1999–2000 and 2001–2002 are not comparable. For this reason, 4-year sample weights were created to account for the two different reference populations in the 1999-2000 and the 2001-2002 NHANES. When combining data from the 1999-2000 NHANES cycle with other cycles, it is recommended that the 4-year sample weights be used for 1999-2002 and the 2-year sample weights be used for other cycles.
+
+The rules for combining surveys also apply to subsamples.
 
 ### Variable construction
 
 ### Outcome
 
-### Sample weights
+## Descriptives

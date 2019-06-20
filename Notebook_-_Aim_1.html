@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-06-12" />
+<meta name="date" content="2019-06-20" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>06/12/2019</em></h4>
+<h4 class="date"><em>06/20/2019</em></h4>
 
 </div>
 
@@ -525,6 +525,7 @@ demo =
          RIDAGEMN,
          RIDAGEEX,
          DMQMILIT,
+         DMQMILIZ,
          DMDBORN,
          DMDCITZN,
          DMDYRSUS,
@@ -555,21 +556,27 @@ bpx =
          BPXDI2,
          BPXDI3,
          BPXDI4,
+         BPXDAR,
          BPAEN1,
          BPAEN2,
          BPAEN3,
-         BPAEN4)
+         BPAEN4,
+         BPQ150A,
+         BPQ150B,
+         BPQ150C,
+         BPQ150D)
 
 # Blood Pressure &amp; Cholesterol
 bpq = 
   stack_nhanes_data(pattern = 'BPQ') %&gt;% 
   select(SEQN,
          cycle,
-         BPQ080,
          BPQ020,
          BPQ030,
          BPQ040A,
          BPQ050A,
+         BPQ080,
+         BPQ090D,
          BPQ100D)
 
 # Smoking - Cigarette/Tobacco Use - Adult 
@@ -578,6 +585,7 @@ smq =
   select(SEQN,
          cycle,
          SMQ020,
+         SMD030,
          SMQ040,
          SMQ050Q,
          SMQ050U)
@@ -601,35 +609,30 @@ rhq =
   stack_nhanes_data(pattern = 'RHQ') %&gt;% 
   select(SEQN,
          cycle,
+         RHQ010,
          RHQ030,
          RHQ031,
+         RHQ031,
+         RHQ040,
          RHD042,
-         RHD152,
-         RHQ166,
-         RHQ169,
-         RHQ171,
-         RHQ180,
-         RHD180,
-         RHQ190,
-         RHD190,
+         RHD043,
+         RHQ060,
          RHD130,
          RHQ131,
          RHQ140,
          RHQ141,
          RHD143,
+         RHD152,
          RHQ160,
+         RHQ166,
          RHD170,
          RHQ171,
-         RHQ200,
-         RHD270,
-         RHQ250,
-         RHQ260,
-         RHQ210,
-         RHD230,
-         RHQ162,
-         RHQ163,
-         RHQ010,
-         RHQ060,
+         RHQ172,
+         RHD173,
+         RHQ180,
+         RHD180,
+         RHQ190,
+         RHD190,
          RHQ420,
          RHQ540,
          RHQ570,
@@ -637,16 +640,20 @@ rhq =
          RHQ596,
          RHD440,
          RHD442,
-         RHQ172,
-         RHQ180,
-         RHD180,
-         RHQ210,
-         RHQ205,
          RHQ300,
          RHQ310,
          RHQ305,
          RHQ330,
-         RHQ332)
+         RHQ332,
+         RHD270,
+         RHQ250,
+         RHQ260,
+         RHQ205,
+         RHQ200,
+         RHQ210,
+         RHD230,
+         RHQ162,
+         RHQ163)
 
 # Cholesterol 
 chol = 
@@ -690,7 +697,9 @@ mcq =
          MCQ160E,
          MCQ160F,
          MCQ180A,
-         MCQ190)
+         MCQ190,
+         MCQ191,
+         MCQ195)
 
 # Oral Glucose Tolerance Test 
 ogt = 
@@ -1976,10 +1985,6 @@ Total
 </div>
 <div id="selecting-women-with-pregnancy-history" class="section level4">
 <h4>Selecting women with pregnancy history:</h4>
-<pre class="r"><code>cvd4 =
-  cvd3 %&gt;%
-  filter(RHQ140 == 1 | RHQ141 == 1 | RHD143 == 1 | RHQ131 == 1 | RHD130 == 1) %&gt;% 
-  select(-c(MCQ160_TOTAL, CVD))</code></pre>
 <p>Final dataset:</p>
 <pre class="r"><code>cvd_data = 
   nhanes %&gt;% 
@@ -1989,21 +1994,165 @@ Total
   filter(RHQ140 == 1 | RHQ141 == 1 | RHD143 == 1 | RHQ131 == 1 | RHD130 == 1) # Pregnancy history (including current)
 
 saveRDS(cvd_data, file = 'cvd_data.rds')</code></pre>
-<p>Final target population has 9003 observations and 121 variables extracted from NHANES and NDI mortality files.</p>
+<p>Final target population has 9003 observations and 133 variables extracted from NHANES and NDI mortality files.</p>
 </div>
+</div>
+</div>
+<div id="data-checks" class="section level2">
+<h2>Data checks</h2>
+<div id="blood-pressure" class="section level3">
+<h3>Blood pressure</h3>
+<ol style="list-style-type: decimal">
+<li>Rule provided in <a href="https://academic.oup.com/ajh/article/31/8/886/4955829">Ortega et al</a></li>
+<li>Rule provided by CDC_NHANES from <a href="https://wwwn.cdc.gov/nchs/data/nhanes/1999-2000/manuals/pe.pdf">physician’s manual</a>:
+<ul>
+<li>If only one blood pressure reading was obtained, that reading is the average.</li>
+<li>If there is more than one blood pressure reading, the first reading is always excluded from the average.</li>
+<li>If only two blood pressure readings were obtained, the second blood pressure reading is the average.</li>
+<li>If all diastolic readings were zero, then the average would be zero.
+<ul>
+<li>Exception: If there is one diastolic reading of zero and one (or more) with a number above zero, the diastolic reading with zero is not used to calculate the diastolic average.</li>
+</ul></li>
+<li>If two out of three are zero, the one diastolic reading that is not zero is used to calculate the diastolic average.</li>
+</ul></li>
+</ol>
+<p><strong>Systolic BP</strong></p>
+<pre class="r"><code># SY BP #
+
+bpx_check = 
+  cvd_data %&gt;% 
+  select(BPXSY1,
+         BPXSY2,
+         BPXSY3,
+         BPXSY4,
+         BPXSAR) %&gt;% 
+  filter(!is.na(BPXSAR)) %&gt;% 
+  rowwise %&gt;% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(ifelse(. == 0, NA, .))) %&gt;% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(flag = ifelse(is.na(.), 0, 1))) %&gt;% 
+  mutate(bpx_flag_tot = sum(BPXSY1_flag, BPXSY2_flag, BPXSY3_flag, BPXSY4_flag),
+         bpx_avg1 = mean(c(BPXSY1,BPXSY2,BPXSY3,BPXSY4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY1_flag == 1 &amp; BPXSY2_flag == 1, BPXSY2,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY1_flag == 1 &amp; BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY1_flag == 1 &amp; BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY2_flag == 1 &amp; BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY2_flag == 1 &amp; BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXSY3_flag == 1 &amp; BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXSY1_flag == 1 &amp; BPXSY2_flag == 1 &amp; BPXSY3_flag == 1, (BPXSY2 + BPXSY3)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXSY1_flag == 1 &amp; BPXSY2_flag == 1 &amp; BPXSY4_flag == 1, (BPXSY2 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXSY1_flag == 1 &amp; BPXSY3_flag == 1 &amp; BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXSY2_flag == 1 &amp; BPXSY3_flag == 1 &amp; BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2, NA))))))))))),
+         diff1 = (BPXSAR - bpx_avg1)^2,
+         diff2 = (BPXSAR - bpx_avg2)^2) %&gt;% 
+  ungroup
+                    
+fivenum(bpx_check$diff1)</code></pre>
+<pre><code>## [1]   0.0000000   0.4444444   1.7777778   5.4444444 256.0000000</code></pre>
+<pre class="r"><code>fivenum(bpx_check$diff2)   </code></pre>
+<pre><code>## [1] 0 0 0 0 0</code></pre>
+<p>Using the rule provided by CDC-NHANES matches with the average variable from 1999-2002</p>
+<p><strong>Diastolic BP</strong></p>
+<pre class="r"><code># DI BP #
+
+bpx_check = 
+  cvd_data %&gt;% 
+  select(BPXDI1,
+         BPXDI2,
+         BPXDI3,
+         BPXDI4,
+         BPXDAR) %&gt;% 
+  filter(!is.na(BPXDAR)) %&gt;% 
+  rowwise %&gt;% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(ifelse(. == 0, NA, .))) %&gt;% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(flag = ifelse(is.na(.), 0, 1))) %&gt;% 
+  mutate(bpx_flag_tot = sum(BPXDI1_flag, BPXDI2_flag, BPXDI3_flag, BPXDI4_flag),
+         bpx_avg1 = mean(c(BPXDI1,BPXDI2,BPXDI3,BPXDI4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI1_flag == 1 &amp; BPXDI2_flag == 1, BPXDI2,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI1_flag == 1 &amp; BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI1_flag == 1 &amp; BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI2_flag == 1 &amp; BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI2_flag == 1 &amp; BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 &amp; BPXDI3_flag == 1 &amp; BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXDI1_flag == 1 &amp; BPXDI2_flag == 1 &amp; BPXDI3_flag == 1, (BPXDI2 + BPXDI3)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXDI1_flag == 1 &amp; BPXDI2_flag == 1 &amp; BPXDI4_flag == 1, (BPXDI2 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXDI1_flag == 1 &amp; BPXDI3_flag == 1 &amp; BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 &amp; BPXDI2_flag == 1 &amp; BPXDI3_flag == 1 &amp; BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2, NA))))))))))),
+         diff1 = (BPXDAR - bpx_avg1)^2,
+         diff2 = (BPXDAR - bpx_avg2)^2) %&gt;% 
+  ungroup
+
+fivenum(bpx_check$diff1)</code></pre>
+<pre><code>## [1]   0.0000000   0.1111111   1.0000000   2.7777778 361.0000000</code></pre>
+<pre class="r"><code>fivenum(bpx_check$diff2)</code></pre>
+<pre><code>## [1]  0  0  0  0 36</code></pre>
+<pre class="r"><code># inconsistencies
+bpx_check %&gt;% 
+  filter(diff2 &gt; 0) %&gt;% 
+  glimpse</code></pre>
+<pre><code>## Observations: 3
+## Variables: 14
+## $ BPXDI1       &lt;int&gt; NA, NA, NA
+## $ BPXDI2       &lt;int&gt; 68, NA, 30
+## $ BPXDI3       &lt;int&gt; 66, 10, 18
+## $ BPXDI4       &lt;int&gt; NA, 20, NA
+## $ BPXDAR       &lt;int&gt; 67, 15, 24
+## $ BPXDI1_flag  &lt;dbl&gt; 0, 0, 0
+## $ BPXDI2_flag  &lt;dbl&gt; 1, 0, 1
+## $ BPXDI3_flag  &lt;dbl&gt; 1, 1, 1
+## $ BPXDI4_flag  &lt;dbl&gt; 0, 1, 0
+## $ bpx_flag_tot &lt;dbl&gt; 2, 2, 2
+## $ bpx_avg1     &lt;dbl&gt; 67, 15, 24
+## $ bpx_avg2     &lt;dbl&gt; 66, 20, 18
+## $ diff1        &lt;dbl&gt; 0, 0, 0
+## $ diff2        &lt;dbl&gt; 1, 25, 36</code></pre>
+<p>Only 3 observations out of 2883 not matching the rule from CDC.</p>
 </div>
 </div>
 <div id="variable-construction" class="section level2">
 <h2>Variable construction</h2>
+<div id="sample-weights" class="section level3">
+<h3>Sample weights</h3>
+<p><strong>Analytic Considerations - Survey Sample Weights</strong></p>
+<p>References:</p>
+<ul>
+<li><p><a href="https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf">NHANES Analytic Guidelines 1999-2010</a></p></li>
+<li><p><a href="https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf">NHANES Analytic Guidelines 2011-2016</a></p></li>
+</ul>
+<p>Various sample weights (interview, examination, and subsample) are available on the data release files. Use of the correct sample weight for NHANES analyses is extremely important and depends on the variables being used. A good general guideline is to use the ‘‘least common denominator’’ approach. With this approach, the analyst checks the variables of interest. The variable that was collected on the smallest number of persons is the least common denominator, and the sample weight that applies to that variable is the appropriate one to use for that particular analysis.</p>
+<p>Sample weights</p>
+<ul>
+<li>1999-2000: Based on 1990 U.S. census</li>
+<li>2001-2014: Based on 2000 U.S. census</li>
+</ul>
+<p>Because different population bases were used, the 2-year weights for 1999–2000 and 2001–2002 are not directly comparable. For analyses of the combined 1999–2000 and 2001–2002 survey years, 4-year sample weights were created to account for the two different reference populations.</p>
+<p>The rules for combining surveys also apply to subsamples</p>
+<p>When survey cycles are combined and the weights are constructed appropriately, the estimates will be representative of the U.S. civilian noninstitutionalized population at the midpoint of the combined survey period, and the sum of combined weights should be reasonably close to an independent estimate of that midpoint population.</p>
+<p>A new sample weight can be calculated based on the sample weights of the combined survey cycles. When combining two or more 2-year cycles from 2001–2002 onward, new multi-year sample weights can be computed by simply dividing the 2-year sample weights by the number of 2-year cycles in the analysis. For example, to analyze data for 2011-2016, divide the three 2-year sample weights by three to obtain the 6-year combined sample weight.</p>
+<p>Because different population bases were used, the 2-year weights for 1999–2000 and 2001–2002 are not comparable. For this reason, 4-year sample weights were created to account for the two different reference populations in the 1999-2000 and the 2001-2002 NHANES. When combining data from the 1999-2000 NHANES cycle with other cycles, it is recommended that the 4-year sample weights be used for 1999-2002 and the 2-year sample weights be used for other cycles.</p>
+</div>
 <div id="variable-construction-1" class="section level3">
 <h3>Variable construction</h3>
 </div>
 <div id="outcome-1" class="section level3">
 <h3>Outcome</h3>
 </div>
-<div id="sample-weights" class="section level3">
-<h3>Sample weights</h3>
 </div>
+<div id="descriptives" class="section level2">
+<h2>Descriptives</h2>
 </div>
 </div>
 
