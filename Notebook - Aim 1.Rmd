@@ -205,6 +205,7 @@ demo =
          RIDAGEMN,
          RIDAGEEX,
          DMQMILIT,
+         DMQMILIZ,
          DMDBORN,
          DMDCITZN,
          DMDYRSUS,
@@ -235,21 +236,27 @@ bpx =
          BPXDI2,
          BPXDI3,
          BPXDI4,
+         BPXDAR,
          BPAEN1,
          BPAEN2,
          BPAEN3,
-         BPAEN4)
+         BPAEN4,
+         BPQ150A,
+         BPQ150B,
+         BPQ150C,
+         BPQ150D)
 
 # Blood Pressure & Cholesterol
 bpq = 
   stack_nhanes_data(pattern = 'BPQ') %>% 
   select(SEQN,
          cycle,
-         BPQ080,
          BPQ020,
          BPQ030,
          BPQ040A,
          BPQ050A,
+         BPQ080,
+         BPQ090D,
          BPQ100D)
 
 # Smoking - Cigarette/Tobacco Use - Adult 
@@ -258,6 +265,7 @@ smq =
   select(SEQN,
          cycle,
          SMQ020,
+         SMD030,
          SMQ040,
          SMQ050Q,
          SMQ050U)
@@ -281,35 +289,30 @@ rhq =
   stack_nhanes_data(pattern = 'RHQ') %>% 
   select(SEQN,
          cycle,
+         RHQ010,
          RHQ030,
          RHQ031,
+         RHQ031,
+         RHQ040,
          RHD042,
-         RHD152,
-         RHQ166,
-         RHQ169,
-         RHQ171,
-         RHQ180,
-         RHD180,
-         RHQ190,
-         RHD190,
+         RHD043,
+         RHQ060,
          RHD130,
          RHQ131,
          RHQ140,
          RHQ141,
          RHD143,
+         RHD152,
          RHQ160,
+         RHQ166,
          RHD170,
          RHQ171,
-         RHQ200,
-         RHD270,
-         RHQ250,
-         RHQ260,
-         RHQ210,
-         RHD230,
-         RHQ162,
-         RHQ163,
-         RHQ010,
-         RHQ060,
+         RHQ172,
+         RHD173,
+         RHQ180,
+         RHD180,
+         RHQ190,
+         RHD190,
          RHQ420,
          RHQ540,
          RHQ570,
@@ -317,16 +320,20 @@ rhq =
          RHQ596,
          RHD440,
          RHD442,
-         RHQ172,
-         RHQ180,
-         RHD180,
-         RHQ210,
-         RHQ205,
          RHQ300,
          RHQ310,
          RHQ305,
          RHQ330,
-         RHQ332)
+         RHQ332,
+         RHD270,
+         RHQ250,
+         RHQ260,
+         RHQ205,
+         RHQ200,
+         RHQ210,
+         RHD230,
+         RHQ162,
+         RHQ163)
 
 # Cholesterol 
 chol = 
@@ -370,7 +377,9 @@ mcq =
          MCQ160E,
          MCQ160F,
          MCQ180A,
-         MCQ190)
+         MCQ190,
+         MCQ191,
+         MCQ195)
 
 # Oral Glucose Tolerance Test 
 ogt = 
