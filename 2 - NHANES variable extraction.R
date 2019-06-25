@@ -49,7 +49,9 @@ demo =
          INDFMPIR,
          RIDEXPRG,
          WTINT2YR,
-         WTMEC2YR)
+         WTINT4YR,
+         WTMEC2YR,
+         WTMEC4YR)
 
 # Blood Pressure
 bpx = 
@@ -215,13 +217,16 @@ ogt =
   stack_nhanes_data(pattern = 'OGTT') %>% 
   select(SEQN,
          cycle,
-         LBXGLT)
+         LBXGLT,
+         WTSOG2YR)
 
 # Plasma Fasting Glucose
 glu = 
   stack_nhanes_data(pattern = paste(c('LAB10AM', 'L10AM_B', 'L10AM_C', 'GLU'), collapse = "|")) %>% 
   select(SEQN,
          cycle,
+         WTSAF2YR,
+         WTSAF4YR,
          LBXGLU)
 
 

@@ -85,3 +85,29 @@ bpx_check %>%
   filter(diff2 > 0) %>% 
   glimpse
 
+
+# SAMPLE WEIGHTS #
+
+weights = 
+  cvd %>% 
+  select(cycle,
+         WTINT2YR,
+         WTINT4YR,
+         WTMEC2YR, 
+         WTMEC4YR, 
+         WTSAF2YR,
+         WTSAF4YR,
+         WTSOG2YR) %>% 
+  mutate(WTINT = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTINT4YR, 1/8*WTINT2YR),
+         WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         WTSAF = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTSAF4YR, 1/8*WTSAF2YR))
+  
+weights %>% 
+  select(WTINT, WTMEC, WTSAF) %>% 
+  summarise_all(sum, na.rm = TRUE)
+
+weights %>% 
+  select(WTINT, WTMEC, WTSAF, WTSOG2YR) %>% 
+  summarise_all(funs(sum(!is.na(.))))
+
+
