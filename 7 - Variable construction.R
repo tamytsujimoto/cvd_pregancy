@@ -222,7 +222,7 @@ cvd_final =
          flag_subpop = ifelse(gender == 2 &
                                 age >= 40 &
                                 age <= 79 &
-                                flag_hst_cvd != 0 &
+                                flag_hst_cvd != 1 &
                                 flag_preg_eli == 1, 1, 0)
   )
 

@@ -1381,7 +1381,7 @@ write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)</code></
 <h3>Blood pressure</h3>
 <ol style="list-style-type: decimal">
 <li>Rule provided in <a href="https://academic.oup.com/ajh/article/31/8/886/4955829">Ortega et al</a></li>
-<li>Rule provided by CDC_NHANES from <a href="https://wwwn.cdc.gov/nchs/data/nhanes/1999-2000/manuals/pe.pdf">physician’s manual</a>:
+<li>Rule provided by CDC_NHANES from <a href="https://wwwn.cdc.gov/nchs/data/nhanes/1999-2000/manuals/pe.pdf">physicianâs manual</a>:
 <ul>
 <li>If only one blood pressure reading was obtained, that reading is the average.</li>
 <li>If there is more than one blood pressure reading, the first reading is always excluded from the average.</li>
@@ -2332,7 +2332,7 @@ NA
   mutate(flag_subpop = ifelse(gender == 2 &amp;
                                 age &gt;= 40 &amp;
                                 age &lt;= 79 &amp;
-                                flag_hst_cvd != 0 &amp;
+                                flag_hst_cvd != 1 &amp;
                                 flag_preg_eli == 1, 1, 0)) %&gt;% 
   select(SEQN, cycle, bpxsy_avg:flag_subpop, eligstat:ucod_leading)</code></pre>
 <p>Final dataset cotains 82091 observations and 100 variables. Saving final dataset:</p>
