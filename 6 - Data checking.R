@@ -85,6 +85,11 @@ bpx_check %>%
   filter(diff2 > 0) %>% 
   glimpse
 
+# CURRENT PREGNANCY #
+
+cvd_final %>% 
+  group_by(RHQ140, RHQ141, RHD143, RIDEXPRG) %>% 
+  summarise(n = n())
 
 # SAMPLE WEIGHTS #
 
