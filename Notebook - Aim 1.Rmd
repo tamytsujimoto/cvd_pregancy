@@ -173,7 +173,7 @@ library(kableExtra)
 library(summarytools)
 ```
 
-```{r}
+```{r stackNHANES, cache=TRUE}
 
 # Path for the downloaded datasets
 data_path = '../3 - Databases/nhanes_data'
@@ -197,6 +197,8 @@ demo =
   stack_nhanes_data(pattern = 'DEMO') %>% 
   select(SEQN,
          cycle,
+         SDMVPSU,
+         SDMVSTRA,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,
@@ -434,7 +436,7 @@ bind_rows('DEMO - Demographic and Weights' = demo,
 
 The mortality files were downloaded from [here](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/). The codes below are based on the R code provided by in [Linked mortality files website](https://www.cdc.gov/nchs/data-linkage/mortality-public.htm).
 
-```{r}
+```{r mortalityFiles, cache=TRUE}
 
 # Downloaded the files and saved in a local repo:
 data_path = '../3 - Databases/mortality_data'
@@ -502,7 +504,7 @@ mortality %>%
 
 PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.
 
-```{r}
+```{r mergeDatasets, cache=TRUE}
 
 nhanes = 
   demo %>% 
@@ -543,7 +545,7 @@ Data checks ran on entire complete dataset
 
 **Systolic BP**
 
-```{r}
+```{r dataCheckSY, cache=TRUE}
 
 # SY BP #
 
@@ -590,7 +592,7 @@ Using the rule provided by CDC-NHANES matches with the average variable from 199
 
 **Diastolic BP**
 
-```{r}
+```{r dataCheckDI, cache=TRUE}
 
 # DI BP #
 
@@ -642,7 +644,7 @@ bpx_check %>%
 
 ### Current Pregnancy
 
-```{r}
+```{r dataCheckPreg, cache=TRUE}
 
 nhanes %>% 
   mutate_at(vars(RHQ140, RHQ141, RHD143), funs(car::Recode(RHD143, "1 = '1. Yes'; 2 = '2. No'; 7 = 'Refused'; 9 = '9. Do not know'"))) %>% 
@@ -695,7 +697,7 @@ independent estimate of that midpoint population.
 
 **Checking sample weights**
 
-```{r}
+```{r dataCheckWght, cache=TRUE}
 
 # SAMPLE WEIGHTS #
 
@@ -725,7 +727,7 @@ weights %>%
 
 ### Variable construction
 
-```{r}
+```{r varConst, cache=TRUE}
 
 cvd_final =
   nhanes %>% 
@@ -968,7 +970,7 @@ Checking how many observations we get from each criteria:
 - flag_diab_fglu: dropping ogtt variable
 - flag_diab: dropping ogtt and fglu variables
 
-```{r}
+```{r dataCheckDM, cache=TRUE}
 
 cvd_final %>% 
   mutate(flag_diab_fglu_ogtt = ifelse(is.na(flag_diab_hst) &
@@ -1018,7 +1020,7 @@ Since the number of observations captured exclusively by ogtt and fglu is small,
 
 With this criteria, we will use the EXAM sample weight for the analyses:
 
-```{r}
+```{r varConstr2, cache=TRUE}
 
 cvd_final = 
   cvd_final %>% 
@@ -1047,7 +1049,7 @@ Since we are dealing with complex survey, we will need to use the dataset contai
     + Stroke (flag_hst_strk)
 * Pregnancy history, including current pregnancy (flag_preg_eli)
 
-```{r}
+```{r targetPop, cache=TRUE}
 
 cvd_final =
   cvd_final %>% 
@@ -1056,13 +1058,14 @@ cvd_final =
                                 age <= 79 &
                                 flag_hst_cvd != 1 &
                                 flag_preg_eli == 1, 1, 0)) %>% 
-  select(SEQN, cycle, bpxsy_avg:flag_subpop, eligstat:ucod_leading)
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading)
 
 ```
 
 Final dataset cotains `r dim(cvd_final)[1]` observations and `r dim(cvd_final)[2]` variables. Saving final dataset:
 
-```{r}
+```{r saveFinalData, cache=TRUE}
 
 cvd_final %>% 
   saveRDS(file = 'cvd_final.rds')
@@ -1073,3 +1076,29 @@ cvd_final %>%
 ```
 
 ## Descriptives
+
+### NHANES Sample Design
+
+*Source:*
+
+- [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+
+- [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+NHANES data are not obtained using a simple random sample. Rather, a complex, multistage probability
+sampling design is used to select a sample representative of the civilian noninstitutionalized resident population of the United State.
+
+NHANES uses a four-stage sampling design: 
+
+1. selection of the primary sampling units (PSUs) (i.e.,
+mostly individual counties);
+2. selection of segments within the counties; 
+3. selection of dwelling units (DUs) or households within segments;
+4. selection of individuals within a household. 
+
+Since 1999, the annual sample size has been approximately 5,000 individuals from 15 different locations (12 locations for 1999) selected from a sampling frame that includes all 50 states and the
+District of Columbia.
+
+The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.
+
+### survey package R

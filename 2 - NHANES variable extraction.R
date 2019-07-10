@@ -26,6 +26,8 @@ demo =
   stack_nhanes_data(pattern = 'DEMO') %>% 
   select(SEQN,
          cycle,
+         SDMVPSU,
+         SDMVSTRA,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,

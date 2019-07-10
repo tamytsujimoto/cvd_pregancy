@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-07-09" />
+<meta name="date" content="2019-07-10" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -303,7 +303,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author"><em>Tamy Tsujimoto</em></h4>
-<h4 class="date"><em>07/09/2019</em></h4>
+<h4 class="date"><em>07/10/2019</em></h4>
 
 </div>
 
@@ -517,6 +517,8 @@ demo =
   stack_nhanes_data(pattern = 'DEMO') %&gt;% 
   select(SEQN,
          cycle,
+         SDMVPSU,
+         SDMVSTRA,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,
@@ -2334,8 +2336,9 @@ NA
                                 age &lt;= 79 &amp;
                                 flag_hst_cvd != 1 &amp;
                                 flag_preg_eli == 1, 1, 0)) %&gt;% 
-  select(SEQN, cycle, bpxsy_avg:flag_subpop, eligstat:ucod_leading)</code></pre>
-<p>Final dataset cotains 82091 observations and 100 variables. Saving final dataset:</p>
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading)</code></pre>
+<p>Final dataset cotains 82091 observations and 102 variables. Saving final dataset:</p>
 <pre class="r"><code>cvd_final %&gt;% 
   saveRDS(file = 'cvd_final.rds')
 
@@ -2345,6 +2348,27 @@ cvd_final %&gt;%
 </div>
 <div id="descriptives" class="section level2">
 <h2>Descriptives</h2>
+<div id="nhanes-sample-design" class="section level3">
+<h3>NHANES Sample Design</h3>
+<p><em>Source:</em></p>
+<ul>
+<li><p><a href="https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf">NHANES Analytic Guidelines 1999-2010</a></p></li>
+<li><p><a href="https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf">NHANES Analytic Guidelines 2011-2016</a></p></li>
+</ul>
+<p>NHANES data are not obtained using a simple random sample. Rather, a complex, multistage probability sampling design is used to select a sample representative of the civilian noninstitutionalized resident population of the United State.</p>
+<p>NHANES uses a four-stage sampling design:</p>
+<ol style="list-style-type: decimal">
+<li>selection of the primary sampling units (PSUs) (i.e., mostly individual counties);</li>
+<li>selection of segments within the counties;</li>
+<li>selection of dwelling units (DUs) or households within segments;</li>
+<li>selection of individuals within a household.</li>
+</ol>
+<p>Since 1999, the annual sample size has been approximately 5,000 individuals from 15 different locations (12 locations for 1999) selected from a sampling frame that includes all 50 states and the District of Columbia.</p>
+<p>The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.</p>
+</div>
+<div id="survey-package-r" class="section level3">
+<h3>survey package R</h3>
+</div>
 </div>
 </div>
 

@@ -1,6 +1,6 @@
 library(tidyverse)
 
-#nhanes = readRDS(file = 'nhanes_mort_complete.rds')
+nhanes = readRDS(file = 'nhanes_mort_complete.rds')
 
 cvd_final =
   nhanes %>% 
@@ -282,7 +282,8 @@ cvd_final =
                                 age <= 79 &
                                 flag_hst_cvd != 0 &
                                 flag_preg_eli == 1, 1, 0)) %>%
-  select(SEQN, cycle, bpxsy_avg:flag_subpop, eligstat:ucod_leading)
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading)
 
 
 cvd_final %>% 
