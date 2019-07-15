@@ -1075,7 +1075,9 @@ cvd_final %>%
 
 ```
 
-## Descriptives
+## Data description
+
+NHANES tutorials [here](https://www.cdc.gov/nchs/tutorials/nhanes/index_continuous.htm)
 
 ### NHANES Sample Design
 
@@ -1101,4 +1103,5 @@ District of Columbia.
 
 The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.
 
-### survey package R
+### Descriptives
+
