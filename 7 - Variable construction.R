@@ -168,7 +168,7 @@ cvd_final =
          SMQ020 = ifelse(SMQ020 %in% c(7,9), NA, SMQ020),
          SMD030 = ifelse(SMD030 %in% c(777,999), NA, SMD030),
          SMQ040 = ifelse(SMQ040 %in% c(7,9), NA, SMQ040),
-         flag_smkng_cur = ifelse(is.na(SMQ020) & is.na(SMQ040), NA, 
+         flag_smkng_cur = ifelse(is.na(SMQ020) & is.na(SMQ040), NA,
                                  ifelse(SMQ020 == 1 & SMQ040 %in% c(1,2), 1, 0)),
          flag_smkng_hst = ifelse(is.na(SMQ020) & is.na(SMQ040), NA, 
                                  ifelse(SMQ020 == 1 & SMQ040 %in% c(3), 1, 0)),
@@ -219,11 +219,6 @@ cvd_final =
          time_int = permth_int,
          time_exm = permth_exm,
          cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
-         flag_subpop = ifelse(gender == 2 &
-                                age >= 40 &
-                                age <= 79 &
-                                flag_hst_cvd != 1 &
-                                flag_preg_eli == 1, 1, 0)
   )
 
 # DIABETES CHECKING #
@@ -280,8 +275,8 @@ cvd_final =
          flag_subpop = ifelse(gender == 2 &
                                 age >= 40 &
                                 age <= 79 &
-                                flag_hst_cvd != 0 &
-                                flag_preg_eli == 1, 1, 0)) %>%
+                                !(flag_hst_cvd %in% 1) &
+                                flag_preg_eli %in% 1, 1, 0)) %>%
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
          bpxsy_avg:flag_subpop, eligstat:ucod_leading)
 

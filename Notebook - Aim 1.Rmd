@@ -85,6 +85,13 @@ Next steps: Variable construction
 
 ## Data extraction 
 
+```{r include = FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(survey)
+```
+
 ### Downloading NHANES data
 
 Using the [R package RNHANES](https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html) to download the datasets. 
@@ -165,13 +172,6 @@ nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)),
 ### Variable extraction
 
 Stack each variable and select variables of interest as described in Database and variable inventory file.
-
-```{r include = FALSE}
-library(tidyverse)
-library(knitr)
-library(kableExtra)
-library(summarytools)
-```
 
 ```{r stackNHANES, cache=TRUE}
 
@@ -1056,8 +1056,8 @@ cvd_final =
   mutate(flag_subpop = ifelse(gender == 2 &
                                 age >= 40 &
                                 age <= 79 &
-                                flag_hst_cvd != 1 &
-                                flag_preg_eli == 1, 1, 0)) %>% 
+                                !(flag_hst_cvd %in% 1) &
+                                flag_preg_eli %in% 1, 1, 0)) %>% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
          bpxsy_avg:flag_subpop, eligstat:ucod_leading)
 
