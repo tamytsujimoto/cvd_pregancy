@@ -272,6 +272,10 @@ cvd_final =
                                      flag_diab_trt_ins %in% 1 |
                                      flag_diab_a1c %in% 1, 1, 0)),
          WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
+         WTMEC_C1 = ifelse(cohort == 2, NA, 
+                           ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
+         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR),
          flag_subpop = ifelse(gender == 2 &
                                 age >= 40 &
                                 age <= 79 &
@@ -280,12 +284,11 @@ cvd_final =
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
          bpxsy_avg:flag_subpop, eligstat:ucod_leading)
 
-
 cvd_final %>% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_final %>% 
-  write.csv(file = 'cvd_final.csv')
+  write.csv(file = 'cvd_final.csv', na = "")
 
 
 

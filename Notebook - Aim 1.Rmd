@@ -1018,7 +1018,9 @@ Since the number of observations captured exclusively by ogtt and fglu is small,
 - Current treatment for diabetes - insuline (flag_diab_trt_ins)
 - Hemoglobin A1c >= 6.5 (flag_diab_a1c)
 
-With this criteria, we will use the EXAM sample weight for the analyses:
+With this criteria, we will use the EXAM sample weight for the analyses.
+
+Since th variables of infant SGA and pre-term delivery are available for 1999-2006 and gestational diabetes is available for 2007-2014, we will do the analyses separated according to cohorts (1999-2006 and 2007-2014). So, we also need to create sample weights for the two cohorts:
 
 ```{r varConstr2, cache=TRUE}
 
@@ -1032,7 +1034,12 @@ cvd_final =
                                    flag_diab_trt_pill %in% 1 |
                                    flag_diab_trt_ins %in% 1 |
                                    flag_diab_a1c %in% 1, 1, 0)),
-         WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR)) 
+         WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
+         WTMEC_C1 = ifelse(cohort == 2, NA, 
+                           ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
+         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR))
+
 ```
 
 ### Study population

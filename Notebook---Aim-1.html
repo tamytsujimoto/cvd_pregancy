@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-07-15" />
+<meta name="date" content="2019-07-22" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">07/15/2019</h4>
+<h4 class="date">07/22/2019</h4>
 
 </div>
 
@@ -3616,7 +3616,8 @@ NA
 <li>Current treatment for diabetes - insuline (flag_diab_trt_ins)</li>
 <li>Hemoglobin A1c &gt;= 6.5 (flag_diab_a1c)</li>
 </ul>
-<p>With this criteria, we will use the EXAM sample weight for the analyses:</p>
+<p>With this criteria, we will use the EXAM sample weight for the analyses.</p>
+<p>Since th variables of infant SGA and pre-term delivery are available for 1999-2006 and gestational diabetes is available for 2007-2014, we will do the analyses separated according to cohorts (1999-2006 and 2007-2014). So, we also need to create sample weights for the two cohorts:</p>
 <pre class="r"><code>cvd_final = 
   cvd_final %&gt;% 
   mutate(flag_diab = ifelse(is.na(flag_diab_hst) &amp;
@@ -3627,7 +3628,11 @@ NA
                                    flag_diab_trt_pill %in% 1 |
                                    flag_diab_trt_ins %in% 1 |
                                    flag_diab_a1c %in% 1, 1, 0)),
-         WTMEC = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/8*WTMEC4YR, 1/8*WTMEC2YR)) </code></pre>
+         WTMEC = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
+         WTMEC_C1 = ifelse(cohort == 2, NA, 
+                           ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
+         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR))</code></pre>
 </div>
 <div id="study-population" class="section level3">
 <h3>Study population</h3>
@@ -3650,11 +3655,11 @@ NA
   mutate(flag_subpop = ifelse(gender == 2 &amp;
                                 age &gt;= 40 &amp;
                                 age &lt;= 79 &amp;
-                                flag_hst_cvd != 1 &amp;
-                                flag_preg_eli == 1, 1, 0)) %&gt;% 
+                                !(flag_hst_cvd %in% 1) &amp;
+                                flag_preg_eli %in% 1, 1, 0)) %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
          bpxsy_avg:flag_subpop, eligstat:ucod_leading)</code></pre>
-<p>Final dataset cotains 82091 observations and 102 variables. Saving final dataset:</p>
+<p>Final dataset cotains 82091 observations and 105 variables. Saving final dataset:</p>
 <pre class="r"><code>cvd_final %&gt;% 
   saveRDS(file = 'cvd_final.rds')
 
