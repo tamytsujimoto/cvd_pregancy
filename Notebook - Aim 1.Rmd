@@ -861,7 +861,7 @@ cvd_final =
                            ifelse(age_diab %in% c(1, 666), 1, 
                                   ifelse(age_diab >= 80, 80, age_diab))),
          age_gest_diab = ifelse(RHQ163 %in% c(777,999), NA, RHQ163),
-         flag_age_diab_30 = ifelse(age_gest_diab < 30, 1, 0),
+         flag_age_diab_30 = ifelse(age_diab < 30, 1, 0),
          flag_infnt_sga = ifelse(RHQ250 %in% c(7,9), NA, 
                                  ifelse(RHQ250 == 1, 1, 0)),
          n_infnt_sga = ifelse(RHQ260 %in% c(77,99), NA, RHQ260),
