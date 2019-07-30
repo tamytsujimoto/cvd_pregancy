@@ -6,6 +6,8 @@ library(summarytools)
 # LOADING DATA #
 ################
 
+# Filtering data from cohort 1999-2006 #
+
 cvd_final = 
   readRDS(file = 'cvd_final.rds') %>% 
   mutate_at(vars(gender,
@@ -72,7 +74,8 @@ cvd_final =
                  flag_leading_diab,
                  flag_mdeath_diab,
                  flag_mdeath_htn,
-                 cvd_outcome), funs(as.factor(.)))
+                 cvd_outcome), funs(as.factor(.))) %>% 
+  filter(cohort == 2)
 
 ##########################
 # DEFINING SURVEY DESIGN #
@@ -81,7 +84,7 @@ cvd_final =
 nhanes <- svydesign(id=~SDMVPSU, 
                     strata=~SDMVSTRA, 
                     nest=TRUE, 
-                    weights=~WTMEC, 
+                    weights=~WTMEC_C2, 
                     data=cvd_final)
 
 ####################################
@@ -109,7 +112,7 @@ cvd_desc(cat = c('gender',
            'hh_size',
            'fam_size',
            'fmpir'),
-         filename = 'demo')
+         filename = 'demo_0716')
 
 #############
 # Pregnancy #
@@ -119,7 +122,8 @@ cvd_desc(cat = c('flag_cur_preg',
                  'flag_hst_preg',
                  'flag_preg_eli',
                  'flag_inft_wght_9lb',
-                 'flag_age_diab_30'),
+                 'flag_age_diab_30'
+                 ),
          cont = c(
            'n_preg',
            'n_preg_live',
@@ -128,30 +132,35 @@ cvd_desc(cat = c('flag_cur_preg',
            'age_lst_live_brth',
            'age_inft_wght_9lb',
            'age_diab'),
-         filename = 'preg')
+         filename = 'preg_0716')
 
 
 #########################
 # Pregnancy Risk Factor #
 #########################
 
-cvd_desc(cat = c('flag_pretrm_dlvry',
-                 'flag_infnt_sga',
-                 'flag_preg_comp_9906',
-                 'flag_2preg_comp_9906',
+cvd_desc(cat = c(#'flag_pretrm_dlvry',
+                 #'flag_infnt_sga',
+                 #'flag_preg_comp_9906',
+                 #'flag_2preg_comp_9906',
                  'flag_gdm',
-                 'flag_hst_brstfd',
+                 #'flag_hst_brstfd',
                  'flag_cur_brstfd',
                  'flag_any_brstfd',
                  'flag_infnt_brstfd',
                  'flag_any_preg_comp'),
-         cont = c('n_pretrm_dlvry',
-                  'n_infnt_sga',
-                  'age_gest_diab',
-                  'n_infnt_brstfd'),
-         filename = 'pregrisk')
+         cont = c(#'n_pretrm_dlvry',
+                  #'n_infnt_sga',
+                  'age_gest_diab'
+                  #'n_infnt_brstfd'
+                  ),
+         filename = 'pregrisk_0716')
 
-
+cvd_final %>% 
+  filter(flag_subpop == 1) %>% 
+  select(flag_pretrm_dlvry, flag_infnt_sga, flag_preg_comp_9906, flag_2preg_comp_9906,
+         flag_hst_brstfd, n_pretrm_dlvry, n_infnt_sga, n_infnt_brstfd) %>% 
+  summarise_all(funs(sum(as.numeric(is.na(.)))))
 
 ##############
 # Gynecology #
@@ -167,7 +176,7 @@ cvd_desc(cat = c('flag_reg_prd',
            'age_frst_prd',
            'age_lst_prd',
            'age_both_ovry_remov'),
-         filename = 'gyn')
+         filename = 'gyn_0716')
 
 ###############
 # Traditional #
@@ -205,7 +214,7 @@ cvd_desc(cat = c('flag_cons_30m',
            'fglu',
            'a1c',
            'ogtt'),
-         filename = 'trad')
+         filename = 'trad_0716')
 
 ############
 # Followup #
@@ -219,4 +228,4 @@ cvd_desc(cat = c('mortstat',
          cont = c(
            'time_int',
            'time_exm'),
-         filename = 'follow')
+         filename = 'follow_0716')

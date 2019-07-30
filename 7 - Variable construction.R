@@ -100,9 +100,8 @@ cvd_final =
          cur_preg_rhq = ifelse(cycle == "1999-2000", RHQ140, 
                                ifelse(cycle == "2001-2002", RHQ141, RHD143)),
          cur_preg_rhq = ifelse(cur_preg_rhq %in% c(7,9), NA, cur_preg_rhq),
-         flag_cur_preg = ifelse(is.na(cur_preg_rhq) & 
-                                is.na(RIDEXPRG), NA,
-                                ifelse(cur_preg_rhq %in% 1 | RIDEXPRG %in% 1, 1, 0)),
+         flag_cur_preg = ifelse(is.na(RIDEXPRG), NA,
+                                ifelse(RIDEXPRG %in% 1, 1, 0)),
          hst_preg = ifelse(cycle %in% c("1999-2000", "2001-2002"), RHD130, RHQ131),
          flag_hst_preg = ifelse(hst_preg %in% c(7,9), NA, 
                                 ifelse(hst_preg == 1, 1, 0)),

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-07-22" />
+<meta name="date" content="2019-07-30" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">07/22/2019</h4>
+<h4 class="date">07/30/2019</h4>
 
 </div>
 
@@ -3361,7 +3361,7 @@ weights %&gt;%
                            ifelse(age_diab %in% c(1, 666), 1, 
                                   ifelse(age_diab &gt;= 80, 80, age_diab))),
          age_gest_diab = ifelse(RHQ163 %in% c(777,999), NA, RHQ163),
-         flag_age_diab_30 = ifelse(age_gest_diab &lt; 30, 1, 0),
+         flag_age_diab_30 = ifelse(age_diab &lt; 30, 1, 0),
          flag_infnt_sga = ifelse(RHQ250 %in% c(7,9), NA, 
                                  ifelse(RHQ250 == 1, 1, 0)),
          n_infnt_sga = ifelse(RHQ260 %in% c(77,99), NA, RHQ260),
@@ -3447,6 +3447,18 @@ weights %&gt;%
          time_exm = permth_exm,
          cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0)
       )</code></pre>
+<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once per session.</code></pre>
 <p><strong>Diabetes Checking</strong></p>
 <p>Diabetes defined initially as any occurrence of:</p>
 <ul>
@@ -3690,6 +3702,12 @@ cvd_final %&gt;%
 </div>
 <div id="descriptives" class="section level3">
 <h3>Descriptives</h3>
+<pre class="r"><code>source('8 - Descriptives.R')
+source('8 - Descriptives_9906.R')
+source('8 - Descriptives_0716.R')</code></pre>
+</div>
+<div id="checking-missing" class="section level3">
+<h3>Checking Missing</h3>
 </div>
 </div>
 </div>
