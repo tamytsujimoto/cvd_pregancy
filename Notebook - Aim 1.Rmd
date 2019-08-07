@@ -1112,7 +1112,7 @@ The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization 
 
 ### Descriptives
 
-```{r RunningDescriptives, cache=TRUE, warning=FALSE}
+```{r RunningDescriptives, warning=FALSE}
 
 source('8 - Descriptives.R')
 source('8 - Descriptives_9906.R')
