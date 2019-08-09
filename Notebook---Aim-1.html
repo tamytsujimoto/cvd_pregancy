@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-07-30" />
+<meta name="date" content="2019-08-09" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">07/30/2019</h4>
+<h4 class="date">08/09/2019</h4>
 
 </div>
 
@@ -3229,7 +3229,7 @@ weights %&gt;%
 </div>
 <div id="variable-construction" class="section level3">
 <h3>Variable construction</h3>
-<pre class="r"><code>cvd_final =
+<pre class="r"><code>cvd_partial =
   nhanes %&gt;% 
   rowwise %&gt;% 
   mutate_at(vars(BPXSY1,
@@ -3306,6 +3306,7 @@ weights %&gt;%
                              RHQ310, 
                              RHQ305),
          ovry_remov = ifelse(ovry_remov %in% c(7,9), NA, ovry_remov),
+         ovry_remov = ifelse(RHQ300 %in% 2, 0, ovry_remov),
          flag_both_ovry_remov = ifelse(ovry_remov == 1, 1, 0),
          age_both_ovry_remov = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;, &quot;2003-2004&quot;, &quot;2005-2006&quot;),
                                       RHQ330,
@@ -3322,14 +3323,15 @@ weights %&gt;%
                                 RHD442),
          flag_bth_cntrl_now = ifelse(bth_cntrl_now %in% c(7,9), NA, 
                                      ifelse(bth_cntrl_now == 1, 1, 0)),
-         flag_estprog_ptch_hst = ifelse(RHQ596 %in% c(7,9), NA, 
-                                        ifelse(RHQ596 == 1, 1, 0)),
+         flag_estprog_ptch_hst = ifelse(RHQ540 %in% 2, 0, # No female hormone
+                                        ifelse(RHQ540 %in% 1 &amp; is.na(RHQ596), 0, # No patches
+                                               ifelse(RHQ596 %in% c(7,9), NA, # Missing
+                                                      ifelse(RHQ596 == 1, 1, 0)))),
          cur_preg_rhq = ifelse(cycle == &quot;1999-2000&quot;, RHQ140, 
                                ifelse(cycle == &quot;2001-2002&quot;, RHQ141, RHD143)),
          cur_preg_rhq = ifelse(cur_preg_rhq %in% c(7,9), NA, cur_preg_rhq),
-         flag_cur_preg = ifelse(is.na(cur_preg_rhq) &amp; 
-                                is.na(RIDEXPRG), NA,
-                                ifelse(cur_preg_rhq %in% 1 | RIDEXPRG %in% 1, 1, 0)),
+         flag_cur_preg = ifelse(is.na(RIDEXPRG), NA,
+                                ifelse(RIDEXPRG %in% 1, 1, 0)),
          hst_preg = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), RHD130, RHQ131),
          flag_hst_preg = ifelse(hst_preg %in% c(7,9), NA, 
                                 ifelse(hst_preg == 1, 1, 0)),
@@ -3364,8 +3366,10 @@ weights %&gt;%
          flag_age_diab_30 = ifelse(age_diab &lt; 30, 1, 0),
          flag_infnt_sga = ifelse(RHQ250 %in% c(7,9), NA, 
                                  ifelse(RHQ250 == 1, 1, 0)),
-         n_infnt_sga = ifelse(RHQ260 %in% c(77,99), NA, RHQ260),
-         n_pretrm_dlvry = ifelse(RHD270 %in% c(77,99), NA, RHD270),
+         n_infnt_sga = ifelse(flag_infnt_sga %in% 0, 0,
+                              ifelse(RHQ260 %in% c(77,99), NA, RHQ260)),
+         n_pretrm_dlvry = ifelse(flag_infnt_sga %in% 0, 0, 
+                                 ifelse(RHD270 %in% c(77,99), NA, RHD270)),
          flag_pretrm_dlvry = ifelse(flag_infnt_sga == 0, 0, 
                                     ifelse(n_pretrm_dlvry &gt; 0, 1, 0)),
          flag_preg_comp_9906 = ifelse(flag_infnt_sga == 0, 0, 1),
@@ -3378,24 +3382,30 @@ weights %&gt;%
          flag_cur_brstfd = ifelse(RHQ200 %in% c(7,9), NA, 
                                   ifelse(RHQ200 == 1, 1, 0)),
          flag_any_brstfd = ifelse(is.na(flag_hst_brstfd) &amp; is.na(flag_cur_brstfd), NA,
-                                  ifelse(flag_hst_brstfd == 1 | flag_cur_brstfd == 1, 1, 0)),
-         n_infnt_brstfd = ifelse(RHD230 %in% c(77,99), NA, RHD230),
+                                  ifelse(flag_hst_brstfd %in% 1 | flag_cur_brstfd %in% 1, 1, 0)),
+         n_infnt_brstfd = ifelse(flag_hst_brstfd %in% 0 &amp; flag_cur_brstfd %in% c(0,NA), 0,
+                                 ifelse(RHD230 %in% c(77,99), NA, RHD230)),
          flag_infnt_brstfd = ifelse(n_infnt_brstfd &gt; 0, 1, 0),
          flag_any_preg_comp = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;, &quot;2003-2004&quot;, &quot;2005-2006&quot;), flag_infnt_sga, flag_gdm),
          flag_cons_30m = ifelse(BPQ150A == 1 | BPQ150B == 1 | BPQ150C == 1 | BPQ150D == 1, 1, 0),
          flag_hst_htn = ifelse(BPQ020 %in% c(7,9), NA, 
                                ifelse(BPQ020 == 1, 1, 0)),
-         flag_htn_trt = ifelse(BPQ050A %in% c(7,9), NA, 
-                               ifelse(BPQ050A == 1, 1, 0)),
+         flag_htn_trt = ifelse(flag_hst_htn %in% 0, 0, # No history of htn
+                               ifelse(BPQ040A %in% 2, 0, # No history of htn trt
+                                      ifelse(BPQ050A %in% c(7,9), NA, 
+                                             ifelse(BPQ050A == 1, 1, 0)))),
          flag_stg1_htn = ifelse(flag_htn_trt == 1, 1, 
                                 ifelse(flag_htn_trt == 0 &amp; bpxsy_avg &gt; 130, 1, 
                                        ifelse(flag_htn_trt == 0 &amp; bpxdi_avg &gt; 80, 1, 0))),
          bpxsy_avg_trt = ifelse(flag_htn_trt == 1, bpxsy_avg, NA),
          bpxsy_avg_untrt = ifelse(flag_htn_trt != 1, bpxsy_avg, NA),
+         cho_total = LBXTC,
+         cho_hdl = ifelse(cycle %in% c('1999-2000', '2001-2002'), LBDHDL,
+                          ifelse(cycle %in% c('2003-2004'), LBXHDD, LBDHDD)),
          SMQ020 = ifelse(SMQ020 %in% c(7,9), NA, SMQ020),
          SMD030 = ifelse(SMD030 %in% c(777,999), NA, SMD030),
          SMQ040 = ifelse(SMQ040 %in% c(7,9), NA, SMQ040),
-         flag_smkng_cur = ifelse(is.na(SMQ020) &amp; is.na(SMQ040), NA, 
+         flag_smkng_cur = ifelse(is.na(SMQ020) &amp; is.na(SMQ040), NA,
                                  ifelse(SMQ020 == 1 &amp; SMQ040 %in% c(1,2), 1, 0)),
          flag_smkng_hst = ifelse(is.na(SMQ020) &amp; is.na(SMQ040), NA, 
                                  ifelse(SMQ020 == 1 &amp; SMQ040 %in% c(3), 1, 0)),
@@ -3406,8 +3416,9 @@ weights %&gt;%
          flag_diab_hst = ifelse(DIQ010 %in% c(7,9), NA,
                                 ifelse(DIQ010 == 1, 1, 0)),
          flag_diab_trt_pill = ifelse(cycle %in% c(&quot;2005-2006&quot;, &quot;2007-2008&quot;), DID070, DIQ070),
-         flag_diab_trt_pill = ifelse(flag_diab_trt_pill %in% c(7,9), NA,
-                                     ifelse(flag_diab_trt_pill == 1, 1, 0)),
+         flag_diab_trt_pill = ifelse(flag_diab_hst %in% 0, 0, # No history of diabetes
+                                     ifelse(flag_diab_trt_pill %in% c(7,9), NA,
+                                            ifelse(flag_diab_trt_pill == 1, 1, 0))),
          flag_diab_trt_ins = ifelse(DIQ050 %in% c(7,9), NA,
                                     ifelse(DIQ050 == 1, 1, 0)),
          fglu = LBXGLU,
@@ -3426,8 +3437,9 @@ weights %&gt;%
                                ifelse(MCQ160E == 1, 1, 0)),
          flag_hst_strk = ifelse(MCQ160F %in% c(7,9), NA,
                                ifelse(MCQ160F == 1, 1, 0)),
-         flag_rhmtd_arth = ifelse(is.na(MCQ190) &amp; is.na(MCQ191) &amp; is.na(MCQ195), NA,
-                                  ifelse(MCQ190 %in% 1 | MCQ191 %in% 1 | MCQ195 %in% 2, 1, 0)),
+         flag_rhmtd_arth = ifelse(MCQ160A %in% 2, 0, # No history of arthritis
+                                  ifelse(is.na(MCQ190) &amp; is.na(MCQ191) &amp; is.na(MCQ195), NA,
+                                         ifelse(MCQ190 %in% 1 | MCQ191 %in% 1 | MCQ195 %in% 2, 1, 0))) ,
          flag_hst_cvd = ifelse(is.na(flag_hst_chf) &amp;
                                is.na(flag_hst_chd) &amp;
                                is.na(flag_hst_angn) &amp;
@@ -3445,8 +3457,8 @@ weights %&gt;%
          flag_mdeath_htn = hyperten,
          time_int = permth_int,
          time_exm = permth_exm,
-         cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0)
-      )</code></pre>
+         cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
+  )</code></pre>
 <pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
 ## Please use a list of either functions or lambdas: 
 ## 
@@ -3476,29 +3488,29 @@ weights %&gt;%
 <li>flag_diab_fglu: dropping ogtt variable</li>
 <li>flag_diab: dropping ogtt and fglu variables</li>
 </ul>
-<pre class="r"><code>cvd_final %&gt;% 
+<pre class="r"><code>cvd_partial %&gt;%
   mutate(flag_diab_fglu_ogtt = ifelse(is.na(flag_diab_hst) &amp;
-                            is.na(flag_diab_trt_pill) &amp;
-                            is.na(flag_diab_trt_ins) &amp;
-                            is.na(flag_diab_fglu) &amp;
-                            is.na(flag_diab_a1c) &amp;
-                            is.na(flag_diab_ogtt), NA,
-                            ifelse(flag_diab_hst %in% 1 |
-                                   flag_diab_trt_pill %in% 1 |
-                                   flag_diab_trt_ins %in% 1 |
-                                   flag_diab_fglu %in% 1 |
-                                   flag_diab_a1c %in% 1 |
-                                   flag_diab_ogtt %in% 1, 1, 0)),
+                                        is.na(flag_diab_trt_pill) &amp;
+                                        is.na(flag_diab_trt_ins) &amp;
+                                        is.na(flag_diab_fglu) &amp;
+                                        is.na(flag_diab_a1c) &amp;
+                                        is.na(flag_diab_ogtt), NA,
+                                      ifelse(flag_diab_hst %in% 1 |
+                                               flag_diab_trt_pill %in% 1 |
+                                               flag_diab_trt_ins %in% 1 |
+                                               flag_diab_fglu %in% 1 |
+                                               flag_diab_a1c %in% 1 |
+                                               flag_diab_ogtt %in% 1, 1, 0)),
          flag_diab_fglu = ifelse(is.na(flag_diab_hst) &amp;
-                              is.na(flag_diab_trt_pill) &amp;
-                              is.na(flag_diab_trt_ins) &amp;
-                              is.na(flag_diab_fglu) &amp;
-                              is.na(flag_diab_a1c), NA,
-                            ifelse(flag_diab_hst %in% 1 |
-                                     flag_diab_trt_pill %in% 1 |
-                                     flag_diab_trt_ins %in% 1 |
-                                     flag_diab_fglu %in% 1 |
-                                     flag_diab_a1c %in% 1, 1, 0)),
+                                   is.na(flag_diab_trt_pill) &amp;
+                                   is.na(flag_diab_trt_ins) &amp;
+                                   is.na(flag_diab_fglu) &amp;
+                                   is.na(flag_diab_a1c), NA,
+                                 ifelse(flag_diab_hst %in% 1 |
+                                          flag_diab_trt_pill %in% 1 |
+                                          flag_diab_trt_ins %in% 1 |
+                                          flag_diab_fglu %in% 1 |
+                                          flag_diab_a1c %in% 1, 1, 0)),
          flag_diab = ifelse(is.na(flag_diab_hst) &amp;
                               is.na(flag_diab_trt_pill) &amp;
                               is.na(flag_diab_trt_ins) &amp;
@@ -3506,10 +3518,10 @@ weights %&gt;%
                             ifelse(flag_diab_hst %in% 1 |
                                      flag_diab_trt_pill %in% 1 |
                                      flag_diab_trt_ins %in% 1 |
-                                     flag_diab_a1c %in% 1, 1, 0))) %&gt;% 
-  group_by(flag_diab_fglu_ogtt, flag_diab_fglu, flag_diab) %&gt;% 
-  summarise(n = n()) %&gt;% 
-  ungroup %&gt;% 
+                                     flag_diab_a1c %in% 1, 1, 0))) %&gt;%
+  group_by(flag_diab_fglu_ogtt, flag_diab_fglu, flag_diab) %&gt;%
+  summarise(n = n()) %&gt;%
+  ungroup %&gt;%
   mutate(freq = n/sum(n)*100) %&gt;% 
   kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
   kable_styling()</code></pre>
@@ -3545,10 +3557,10 @@ freq
 0
 </td>
 <td style="text-align:center;">
-71,200
+71,304
 </td>
 <td style="text-align:center;">
-86.73
+86.86
 </td>
 </tr>
 <tr>
@@ -3579,10 +3591,10 @@ freq
 0
 </td>
 <td style="text-align:center;">
-455
+465
 </td>
 <td style="text-align:center;">
-0.55
+0.57
 </td>
 </tr>
 <tr>
@@ -3596,10 +3608,10 @@ freq
 1
 </td>
 <td style="text-align:center;">
-6,338
+6,224
 </td>
 <td style="text-align:center;">
-7.72
+7.58
 </td>
 </tr>
 <tr>
@@ -3630,21 +3642,21 @@ NA
 </ul>
 <p>With this criteria, we will use the EXAM sample weight for the analyses.</p>
 <p>Since th variables of infant SGA and pre-term delivery are available for 1999-2006 and gestational diabetes is available for 2007-2014, we will do the analyses separated according to cohorts (1999-2006 and 2007-2014). So, we also need to create sample weights for the two cohorts:</p>
-<pre class="r"><code>cvd_final = 
-  cvd_final %&gt;% 
+<pre class="r"><code>cvd_partial =
+  cvd_partial %&gt;%
   mutate(flag_diab = ifelse(is.na(flag_diab_hst) &amp;
-                            is.na(flag_diab_trt_pill) &amp;
-                            is.na(flag_diab_trt_ins) &amp;
-                            is.na(flag_diab_a1c), NA,
+                              is.na(flag_diab_trt_pill) &amp;
+                              is.na(flag_diab_trt_ins) &amp;
+                              is.na(flag_diab_a1c), NA,
                             ifelse(flag_diab_hst %in% 1 |
-                                   flag_diab_trt_pill %in% 1 |
-                                   flag_diab_trt_ins %in% 1 |
-                                   flag_diab_a1c %in% 1, 1, 0)),
+                                     flag_diab_trt_pill %in% 1 |
+                                     flag_diab_trt_ins %in% 1 |
+                                     flag_diab_a1c %in% 1, 1, 0)),
          WTMEC = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
          cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
          WTMEC_C1 = ifelse(cohort == 2, NA, 
                            ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
-         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR))</code></pre>
+         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR)) </code></pre>
 </div>
 <div id="study-population" class="section level3">
 <h3>Study population</h3>
@@ -3662,21 +3674,26 @@ NA
 </ul></li>
 <li>Pregnancy history, including current pregnancy (flag_preg_eli)</li>
 </ul>
-<pre class="r"><code>cvd_final =
-  cvd_final %&gt;% 
+<pre class="r"><code>cvd_partial =
+  cvd_partial %&gt;% 
   mutate(flag_subpop = ifelse(gender == 2 &amp;
                                 age &gt;= 40 &amp;
                                 age &lt;= 79 &amp;
                                 !(flag_hst_cvd %in% 1) &amp;
-                                flag_preg_eli %in% 1, 1, 0)) %&gt;% 
+                                flag_preg_eli %in% 1, 1, 0)) </code></pre>
+<p>Saving final dataset:</p>
+<pre class="r"><code>cvd_partial %&gt;% 
+  saveRDS(file = 'cvd_partial.rds')
+
+cvd_partial %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading)</code></pre>
-<p>Final dataset cotains 82091 observations and 105 variables. Saving final dataset:</p>
-<pre class="r"><code>cvd_final %&gt;% 
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %&gt;% 
   saveRDS(file = 'cvd_final.rds')
 
-cvd_final %&gt;% 
-  write.csv(file = 'cvd_final.csv')</code></pre>
+cvd_partial %&gt;% 
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %&gt;% 
+  write.csv(file = 'cvd_final.csv', na = &quot;&quot;)</code></pre>
 </div>
 </div>
 <div id="data-description" class="section level2">
