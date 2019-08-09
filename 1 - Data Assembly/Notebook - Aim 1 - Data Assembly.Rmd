@@ -1,0 +1,871 @@
+---
+title: "CVD Project - Aim 1 - Notebook"
+author: "Tamy Tsujimoto"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: paper 
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project Summary 
+
+## Overview
+
+In the proposed proof of concept study, we will determine if adding specific adverse pregnancy outcomes (APOs) as risk factors to the ACC/AHA Pooled Cohort Equations (ACC/AHA PCE) improves cardiovascular (CVD) risk prediction in women.
+
+## Goal
+
+Aim 1: Examine if adding pre-term delivery or gestational diabetes to the traditional risk factors in the ACC/AHA PCE improves risk prediction compared with traditional risk factors alone, using a national prospective cohort.
+
+## Study Sample
+
+* Women
+* ages 40 - 79 years
+* At least one pregnancy
+* No existing cardiovascular disease at baseline
+    
+## Outcome
+
+CVD-specific death.
+
+## ACC/AHA PCE
+
+* Reference: [2013 ACC/AHA Guideline on the Assessment of Cardiovascular Risk](https://www.ahajournals.org/doi/pdf/10.1161/01.cir.0000437741.48606.98)
+* [2018 Prevention Guidelines Tool CV Risk Calculator](http://static.heart.org/riskcalc/app/index.html#!/baseline-risk)
+* Sex and race specific equations to predict 10-year risk for first ASCVD event
+* Ten-year risk was defined as the risk of developing a first ASCVD event, defined as nonfatal myocardial infarction (MI) or coronary heart disease (CHD) death, or fatal or nonfatal stroke, over a 10-year period among people free from ASCVD at the beginning of the period
+* The ASCVD risk estimates were developed from sex-and race-specific proportional hazards models that included the covariates of age, treated or untreated systolic blood pressure (SBP), total cholesterol, high-density lipoprotein cholesterol (HDL-C), current smoking (Y/N), and diabetes (Y/N)
+* End points were censored at 12 years, and model fit was evaluated through the area under the receiver operating curve (C-statistic) for discrimination and the calibration chi-squared statistic
+
+## Data sources
+
+* [National Health and Nutrition Examination Survey (NHANES)](https://wwwn.cdc.gov/nchs/nhanes/Default.aspx)
+    + Continuous NHANES datasets (2 years) - 1999-2014
+    +	Databases (119)
+        + Demographics (1)
+        + Dietary (8)
+        + Examination (18)
+        + Laboratory (48)
+        + Questionnaire (44)
+    + [NHANES Survey Methods and Analytic Guidelines](https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx)
+        + Plans and Operations
+        + Sample Design
+        + Estimation and Weight Procedures
+        + Analytic guidelines
+            + [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+            + [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+* [NDI Mortality Files](https://www.cdc.gov/nchs/data-linkage/mortality.htm)
+    + [File Description](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-file-description.pdf)
+    + [Public-Use Data Dictionary](https://www.cdc.gov/nchs/data/datalinkage/public-use-2015-linked-mortality-files-data-dictionary.pdf)
+    + [Mortality Files](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/)
+    
+
+# Data Assembly
+
+## Tasks and deadlines
+
+| Task                                                       | Deadline   |
+|------------------------------------------------------------|------------|
+| Shortlist variables/datasets that will be used from NHANES |            |
+| Download NHANES files (1999-2014)                          | 05/01/2019 |
+| Merge NHANES files and construct survey weights            | 06/01/2019 |
+| Merge with mortality data                                  | 06/01/2019 |
+| Select target population                                   | 06/01/2019 |
+| Data quality checks                                        | 07/01/2019 |
+
+Next steps: Variable construction
+
+## Data extraction 
+
+```{r include = FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(survey)
+```
+
+### Downloading NHANES data
+
+Using the [R package RNHANES](https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html) to download the datasets. 
+
+```{r eval=FALSE}
+
+library(RNHANES)
+library(tidyverse)
+
+# Years considered in the analysis (1999-2014)
+yr = paste(seq(1999, 2013, by = 2), seq(2000, 2014, by = 2), sep = "-")
+
+# Demographic Variables & Sample Weights
+nhanes_load_data(file = "DEMO", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Blood Pressure
+nhanes_load_data(file = "BPX", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Blood Pressure & Cholesterol
+nhanes_load_data(file = "BPQ", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Smoking - Cigarette/Tobacco Use - Adult 
+nhanes_load_data(file = "SMQ", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Diabetes
+nhanes_load_data(file = "DIQ", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Reproductive Health 
+nhanes_load_data(file = "RHQ", 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Cholesterol 
+nhanes_load_data(file = c('Lab13', 'l13_B', 'l13_C', rep('TCHOL', 5)), 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+nhanes_load_data(file = 'HDL', 
+                 year = yr[-c(1:3)], 
+                 destination = "nhanes_data")
+
+# Cotinine 
+nhanes_load_data(file = c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'COTNAL_F', 'COTNAL_G', 'COT_H'), 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Glycohemoglobin 
+nhanes_load_data(file = c('LAB10', 'L10_B', 'L10_C', rep('GHB', 5)), 
+                 year = yr, 
+                 destination = "nhanes_data")
+
+# Medical Conditions 
+nhanes_load_data(file = "MCQ", 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")
+
+# Oral Glucose Tolerance Test 
+nhanes_load_data(file = 'OGTT', 
+                 year = yr[-c(1:3)], 
+                 destination = "../3 - Databases/nhanes_data")
+
+# Plasma Fasting Glucose
+nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)), 
+                 year = yr, 
+                 destination = "../3 - Databases/nhanes_data")
+```
+
+### Variable extraction
+
+Stack each variable and select variables of interest as described in Database and variable inventory file.
+
+```{r stackNHANES}
+
+source('2 - NHANES variable extraction.R')
+
+############
+# CHECKING #
+############
+
+bind_rows('DEMO - Demographic and Weights' = demo, 
+          'BPX - Blood Pressure' = bpx, 
+          'BPQ - Blood Pressure & Cholesterol' = bpq, 
+          'SMQ - Smoking' = smq,
+          'DIQ - Diabetes' = diq,
+          'RHQ - Reproductive Health' = rhq, 
+          'L13 + CHOL - Cholesterol' = chol,
+          'MCQ - Medical Conditions' = mcq,
+          'HDL' = hdl,
+          'Cotinine' = cot, 
+          'Glycohemoglobin' = glyc,
+          'Glucose Tolerance Test' = ogt,
+          'Fasting Glucose' = glu,
+          .id = 'Database') %>% 
+  select(Database, cycle) %>% 
+  group_by(Database, cycle) %>% 
+  summarise(n = n()) %>% 
+  spread(key = cycle, value = n) %>% 
+  ungroup() %>% 
+  mutate(Total = rowSums(.[,2:9], na.rm = TRUE)) %>% 
+  arrange(desc(Total)) %>% 
+  kable(format.args = list(big.mark = ",")) %>% 
+  kable_styling()
+
+```
+
+### Downloading and reading mortality data
+
+The mortality files were downloaded from [here](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/). The codes below are based on the R code provided by in [Linked mortality files website](https://www.cdc.gov/nchs/data-linkage/mortality-public.htm).
+
+```{r mortalityFiles}
+
+source('3 - Download Mortality data.R')
+
+############
+# CHECKING #
+############
+
+mortality %>% 
+  group_by(cycle) %>% 
+  summarise(n = n()) %>% 
+  bind_rows(data.frame(cycle = 'Total', n = dim(mortality)[1], stringsAsFactors = FALSE)) %>% 
+  kable(format.args = list(big.mark = ",")) %>% 
+  kable_styling()
+
+```
+
+### Merging datasets
+
+PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.
+
+```{r mergeDatasets}
+
+nhanes = 
+  demo %>% 
+  left_join(bpq, by = c('SEQN', 'cycle')) %>% 
+  left_join(bpx, by = c('SEQN', 'cycle')) %>% 
+  left_join(chol, by = c('SEQN', 'cycle')) %>% 
+  left_join(cot, by = c('SEQN', 'cycle')) %>% 
+  left_join(diq, by = c('SEQN', 'cycle')) %>% 
+  left_join(glu, by = c('SEQN', 'cycle')) %>% 
+  left_join(glyc, by = c('SEQN', 'cycle')) %>% 
+  left_join(hdl, by = c('SEQN', 'cycle')) %>% 
+  left_join(mcq, by = c('SEQN', 'cycle')) %>% 
+  left_join(ogt, by = c('SEQN', 'cycle')) %>% 
+  left_join(rhq, by = c('SEQN', 'cycle')) %>% 
+  left_join(smq, by = c('SEQN', 'cycle')) %>% 
+  left_join(mortality, by = c('SEQN', 'cycle'))
+  
+saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
+write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)
+
+```
+
+## Data checks
+
+Data checks ran on entire complete dataset
+
+### Blood pressure 
+
+1. Rule provided in [Ortega et al](https://academic.oup.com/ajh/article/31/8/886/4955829)
+2. Rule provided by CDC_NHANES from [physician’s manual](https://wwwn.cdc.gov/nchs/data/nhanes/1999-2000/manuals/pe.pdf):
+    + If only one blood pressure reading was obtained, that reading is the average. 
+    + If there is more than one blood pressure reading, the first reading is always excluded from the average. 
+    + If only two blood pressure readings were obtained, the second blood pressure reading is the average. 
+    + If all diastolic readings were zero, then the average would be zero. 
+        + Exception: If there is one diastolic reading of zero and one (or more) with a number above zero, the diastolic reading with zero is not used to calculate the diastolic average. 
+    + If two out of three are zero, the one diastolic reading that is not zero is used to calculate the diastolic average. 
+
+
+**Systolic BP**
+
+```{r dataCheckSY}
+
+# SY BP #
+
+bpx_check = 
+  nhanes %>% 
+  select(BPXSY1,
+         BPXSY2,
+         BPXSY3,
+         BPXSY4,
+         BPXSAR) %>% 
+  filter(!is.na(BPXSAR)) %>% 
+  rowwise %>% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(ifelse(. == 0, NA, .))) %>% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(flag = ifelse(is.na(.), 0, 1))) %>% 
+  mutate(bpx_flag_tot = sum(BPXSY1_flag, BPXSY2_flag, BPXSY3_flag, BPXSY4_flag),
+         bpx_avg1 = mean(c(BPXSY1,BPXSY2,BPXSY3,BPXSY4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY2_flag == 1, BPXSY2,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                    ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 2 & BPXSY3_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY3_flag == 1, (BPXSY2 + BPXSY3)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY4_flag == 1, (BPXSY2 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXSY2_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2, NA))))))))))),
+         diff1 = (BPXSAR - bpx_avg1)^2,
+         diff2 = (BPXSAR - bpx_avg2)^2) %>% 
+  ungroup
+                    
+fivenum(bpx_check$diff1)
+fivenum(bpx_check$diff2)   
+
+```
+
+Using the rule provided by CDC-NHANES matches with the average variable from 1999-2002
+
+**Diastolic BP**
+
+```{r dataCheckDI}
+
+# DI BP #
+
+bpx_check = 
+  nhanes %>% 
+  select(BPXDI1,
+         BPXDI2,
+         BPXDI3,
+         BPXDI4,
+         BPXDAR) %>% 
+  filter(!is.na(BPXDAR)) %>% 
+  rowwise %>% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(ifelse(. == 0, NA, .))) %>% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(flag = ifelse(is.na(.), 0, 1))) %>% 
+  mutate(bpx_flag_tot = sum(BPXDI1_flag, BPXDI2_flag, BPXDI3_flag, BPXDI4_flag),
+         bpx_avg1 = mean(c(BPXDI1,BPXDI2,BPXDI3,BPXDI4), na.rm = TRUE),
+         bpx_avg2 = ifelse(bpx_flag_tot == 1, bpx_avg1,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI2_flag == 1, BPXDI2,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                    ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 2 & BPXDI3_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI3_flag == 1, (BPXDI2 + BPXDI3)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI4_flag == 1, (BPXDI2 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2,
+                    ifelse(bpx_flag_tot == 3 & BPXDI2_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2, NA))))))))))),
+         diff1 = (BPXDAR - bpx_avg1)^2,
+         diff2 = (BPXDAR - bpx_avg2)^2) %>% 
+  ungroup
+
+fivenum(bpx_check$diff1)
+fivenum(bpx_check$diff2)
+
+# inconsistencies
+bpx_check %>% 
+  filter(diff2 > 0) %>% 
+  glimpse
+
+```
+
+`r dim(filter(bpx_check,diff2 > 0))[1] ` observations out of `r dim(bpx_check)[1]` (`r round(dim(filter(bpx_check,diff2 > 0))[1]/dim(bpx_check)[1]*100,2)` %) not matching the rule from CDC.
+
+### Current Pregnancy
+
+```{r dataCheckPreg}
+
+nhanes %>% 
+  mutate_at(vars(RHQ140, RHQ141, RHD143), funs(car::Recode(RHD143, "1 = '1. Yes'; 2 = '2. No'; 7 = 'Refused'; 9 = '9. Do not know'"))) %>% 
+  mutate(RIDEXPRG = car::Recode(RIDEXPRG, "1 = '1. Yes'; 2 = '2. No'; 3 = '3. Do not know'")) %>% 
+  group_by(RHQ140, RHQ141, RHD143, RIDEXPRG) %>% 
+  summarise(n = n()) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+
+```
+
+## Data construction
+
+### Sample weights
+
+**Analytic Considerations - Survey Sample Weights**
+
+Sources: 
+
+- [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+
+- [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+**Apropriate sample weights**
+
+Various sample weights (interview, examination, and subsample) are available on the data release files. Use of the correct sample weight for NHANES analyses is extremely important and depends on the variables being used. A good general guideline is to use the "least common denominator" approach. With this approach, the analyst checks the variables of interest. The variable that was collected on the smallest number of persons is the least common denominator, and the sample weight that applies to that variable is the appropriate one to use for that particular analysis.
+
+![](Figures/Weight table 1999-2010.png)
+![](Figures/Weight table 2011-2016.png)
+
+**Combining sample weights**
+
+Sample weights
+
+- 1999-2000: Based on 1990 U.S. census 
+- 2001-2014: Based on 2000 U.S. census 
+
+A new sample weight can be calculated based on the sample weights of the combined survey cycles. When combining two or more 2-year cycles from 2001-2002 onward, new multi-year sample weights can be computed by simply dividing the 2-year sample weights by the number of 2-year cycles in the analysis. For example, to analyze data for 2011-2016, divide the three 2-year sample weights by three to obtain the 6-year combined sample weight.
+
+Because different population bases were used, the 2-year weights for 1999-2000 and 2001-2002 are not comparable. For this reason, 4-year sample weights were created to account for the two different reference populations in the 1999-2000 and the 2001-2002 NHANES. When combining data from the 1999-2000 NHANES cycle with other cycles, it is recommended that the 4-year sample weights be used for 1999-2002 and the 2-year sample weights be used for other cycles. To use both the 4-year sample weight for 1999-2002 and 2-year sample weights for other cycles,
+the 4-year sample weight needs to be doubled prior to analysis so that the observations in 1999-
+2002 have weights similar in magnitude to the 2-year sample weights.
+
+![](Figures/Weight construction formulas 2011-2016.png)
+
+The rules for combining surveys also apply to subsamples.
+
+When survey cycles are combined and the weights are constructed appropriately, the estimates will be representative of the U.S. civilian noninstitutionalized population at the midpoint of the combined survey period, and the sum of combined weights should be reasonably close to an
+independent estimate of that midpoint population.
+
+**Checking sample weights**
+
+```{r dataCheckWght}
+
+# SAMPLE WEIGHTS #
+
+weights = 
+  nhanes %>% 
+  select(cycle,
+         WTINT2YR,
+         WTINT4YR,
+         WTMEC2YR, 
+         WTMEC4YR, 
+         WTSAF2YR,
+         WTSAF4YR,
+         WTSOG2YR) %>% 
+  mutate(WTINT = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTINT4YR, 1/8*WTINT2YR),
+         WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         WTSAF = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTSAF4YR, 1/8*WTSAF2YR))
+  
+weights %>% 
+  select(WTINT, WTMEC, WTSAF) %>% 
+  summarise_all(sum, na.rm = TRUE)
+
+weights %>% 
+  select(WTINT, WTMEC, WTSAF, WTSOG2YR) %>% 
+  summarise_all(funs(sum(!is.na(.))))
+
+```
+
+### Variable construction
+
+```{r varConst}
+
+cvd_partial =
+  nhanes %>% 
+  rowwise %>% 
+  mutate_at(vars(BPXSY1,
+                 BPXSY2,
+                 BPXSY3,
+                 BPXSY4), funs(flag = ifelse(is.na(.) | . == 0, 0, 1))) %>% 
+  mutate_at(vars(BPXDI1,
+                 BPXDI2,
+                 BPXDI3,
+                 BPXDI4), funs(flag = ifelse(is.na(.) | . == 0, 0, 1))) %>% 
+  mutate(bpx_flag_tot = sum(BPXSY1_flag, BPXSY2_flag, BPXSY3_flag, BPXSY4_flag),
+         bpxsy_avg = ifelse(bpx_flag_tot == 1,  mean(c(BPXSY1,BPXSY2,BPXSY3,BPXSY4), na.rm = TRUE),
+                            ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY2_flag == 1, BPXSY2,
+                                   ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                                          ifelse(bpx_flag_tot == 2 & BPXSY1_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                                                 ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY3_flag == 1, BPXSY3,
+                                                        ifelse(bpx_flag_tot == 2 & BPXSY2_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                                                               ifelse(bpx_flag_tot == 2 & BPXSY3_flag == 1 & BPXSY4_flag == 1, BPXSY4,
+                                                                      ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY3_flag == 1, (BPXSY2 + BPXSY3)/2,
+                                                                             ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY2_flag == 1 & BPXSY4_flag == 1, (BPXSY2 + BPXSY4)/2,
+                                                                                    ifelse(bpx_flag_tot == 3 & BPXSY1_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2,
+                                                                                           ifelse(bpx_flag_tot == 3 & BPXSY2_flag == 1 & BPXSY3_flag == 1 & BPXSY4_flag == 1, (BPXSY3 + BPXSY4)/2, NA))))))))))),
+         bpx_flag_tot = sum(BPXDI1_flag, BPXDI2_flag, BPXDI3_flag, BPXDI4_flag),
+         bpxdi_avg = ifelse(bpx_flag_tot == 1, mean(c(BPXDI1,BPXDI2,BPXDI3,BPXDI4), na.rm = TRUE),
+                            ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI2_flag == 1, BPXDI2,
+                                   ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                                          ifelse(bpx_flag_tot == 2 & BPXDI1_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                                                 ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI3_flag == 1, BPXDI3,
+                                                        ifelse(bpx_flag_tot == 2 & BPXDI2_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                                                               ifelse(bpx_flag_tot == 2 & BPXDI3_flag == 1 & BPXDI4_flag == 1, BPXDI4,
+                                                                      ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI3_flag == 1, (BPXDI2 + BPXDI3)/2,
+                                                                             ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI2_flag == 1 & BPXDI4_flag == 1, (BPXDI2 + BPXDI4)/2,
+                                                                                    ifelse(bpx_flag_tot == 3 & BPXDI1_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2,
+                                                                                           ifelse(bpx_flag_tot == 3 & BPXDI2_flag == 1 & BPXDI3_flag == 1 & BPXDI4_flag == 1, (BPXDI3 + BPXDI4)/2, NA)))))))))))) %>% 
+  ungroup %>% 
+  mutate(age = RIDAGEYR,
+         gender = RIAGENDR,
+         race = RIDRETH1,
+         educ_level = ifelse(DMDEDUC2 %in% c(7,9), NA, DMDEDUC2),
+         marit_stat = ifelse(DMDMARTL %in% c(77,99), NA, DMDMARTL),
+         hh_size = DMDHHSIZ,
+         fam_size = DMDFMSIZ,
+         hh_income = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                            INDHHINC,
+                            INDHHIN2),
+         hh_income = ifelse(hh_income %in% c(77, 99), NA, hh_income),
+         fam_income = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                             INDFMINC,
+                             INDFMIN2),
+         fam_income = ifelse(fam_income %in% c(77, 99), NA, fam_income),
+         fmpir = INDFMPIR,
+         flag_milit_stat = ifelse(cycle %in% c("2011-2012", "2013-2014"),
+                                  DMQMILIZ,
+                                  DMQMILIT),
+         flag_milit_stat = ifelse(flag_milit_stat %in% c(7,9), NA,
+                                  ifelse(flag_milit_stat == 1, 1, 0)),
+         birth_country = ifelse(DMDBORN %in% c(7,9), NA, DMDBORN),
+         ctzn_stat = ifelse(DMDCITZN %in% c(7,9), NA, DMDCITZN),
+         yrs_us = ifelse(DMDYRSUS %in% c(77, 88, 99), NA, DMDYRSUS),
+         age_frst_prd = ifelse(RHQ010 %in% c(777, 999), NA, RHQ010),
+         flag_reg_prd = ifelse(cycle %in% c("1999-2000", "2001-2002"),
+                               RHQ030,
+                               RHQ031),
+         flag_reg_prd = ifelse(flag_reg_prd %in% c(7,9), NA,
+                               ifelse(flag_reg_prd == 1, 1, 0)),
+         RHD043 = ifelse(RHD043 == 3, 7, RHD043), # coding Hysterectomy as 7
+         rsn_not_regprd = ifelse(cycle %in% c("1999-2000", "2001-2002"), RHQ040,
+                                 ifelse(cycle %in% c("2013-2014", "2015-2016"), RHD043, RHD042)),
+         rsn_not_regprd = ifelse(rsn_not_regprd %in% c(77,99), NA, rsn_not_regprd),
+         flag_regprd_preg = ifelse(is.na(rsn_not_regprd), rsn_not_regprd, 
+                                   ifelse(rsn_not_regprd %in% c(1,3), 1, 0)),
+         age_lst_prd = ifelse(RHQ060 %in% c(777, 999), NA, RHQ060),
+         ovry_remov = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                             RHQ310, 
+                             RHQ305),
+         ovry_remov = ifelse(ovry_remov %in% c(7,9), NA, ovry_remov),
+         ovry_remov = ifelse(RHQ300 %in% 2, 0, ovry_remov),
+         flag_both_ovry_remov = ifelse(ovry_remov == 1, 1, 0),
+         age_both_ovry_remov = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                                      RHQ330,
+                                      RHQ332),
+         age_both_ovry_remov = ifelse(age_both_ovry_remov <= 19, 19,
+                                      ifelse(age_both_ovry_remov >= 60, 60, age_both_ovry_remov)),
+         age_both_ovry_remov = ifelse(flag_both_ovry_remov == 1, 
+                                      age_both_ovry_remov,
+                                      NA),
+         flag_bth_cntrl_hst = ifelse(RHQ420 %in% c(7,9), NA, 
+                                     ifelse(RHQ420 == 1, 1, 0)),
+         bth_cntrl_now = ifelse(cycle %in% c("1999-2000", "2001-2002"),
+                                RHD440,
+                                RHD442),
+         flag_bth_cntrl_now = ifelse(bth_cntrl_now %in% c(7,9), NA, 
+                                     ifelse(bth_cntrl_now == 1, 1, 0)),
+         flag_estprog_ptch_hst = ifelse(RHQ540 %in% 2, 0, # No female hormone
+                                        ifelse(RHQ540 %in% 1 & is.na(RHQ596), 0, # No patches
+                                               ifelse(RHQ596 %in% c(7,9), NA, # Missing
+                                                      ifelse(RHQ596 == 1, 1, 0)))),
+         cur_preg_rhq = ifelse(cycle == "1999-2000", RHQ140, 
+                               ifelse(cycle == "2001-2002", RHQ141, RHD143)),
+         cur_preg_rhq = ifelse(cur_preg_rhq %in% c(7,9), NA, cur_preg_rhq),
+         flag_cur_preg = ifelse(is.na(RIDEXPRG), NA,
+                                ifelse(RIDEXPRG %in% 1, 1, 0)),
+         hst_preg = ifelse(cycle %in% c("1999-2000", "2001-2002"), RHD130, RHQ131),
+         flag_hst_preg = ifelse(hst_preg %in% c(7,9), NA, 
+                                ifelse(hst_preg == 1, 1, 0)),
+         flag_preg_eli = ifelse(is.na(flag_hst_preg) & is.na(flag_cur_preg), NA, 
+                                ifelse(flag_hst_preg %in% 1 | flag_cur_preg %in% 1, 1, 0)),
+         n_preg = ifelse(RHQ160 %in% c(77,99), NA, RHQ160),
+         n_preg_live = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004"), RHD170, RHQ171),
+         n_preg_live = ifelse(n_preg_live %in% c(77,99), NA, 
+                              ifelse(n_preg_live >= 11, 11, n_preg_live)),
+         n_vgnl_dlvry = ifelse(RHQ166 %in% c(77,99), NA, RHQ166),
+         flag_inft_wght_9lb = ifelse(RHQ172 %in% c(7,9), NA, 
+                                     ifelse(RHQ172 == 1, 1, 0)),
+         age_fst_live_brth = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                                    RHQ180, 
+                                    RHD180),
+         age_fst_live_brth = ifelse(age_fst_live_brth %in% c(777,999), NA, 
+                                    ifelse(age_fst_live_brth <= 14, 14,
+                                           ifelse(age_fst_live_brth >= 45, 45, age_fst_live_brth))),
+         age_lst_live_brth = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
+                                    RHQ190, 
+                                    RHD190),
+         age_lst_live_brth = ifelse(age_lst_live_brth %in% c(777,999), NA, 
+                                    ifelse(age_lst_live_brth <= 14, 14,
+                                           ifelse(age_lst_live_brth >= 45, 45, age_lst_live_brth))),
+         age_inft_wght_9lb = ifelse(RHD173 %in% c(777,999), NA, RHD173),
+         age_diab = ifelse(cycle == "1999-2000", DIQ040Q,
+                           ifelse(cycle %in% c("2001-2002", "2003-2004"), DID040Q, DID040)),
+         age_diab = ifelse(age_diab %in% c(777,999), NA, 
+                           ifelse(age_diab %in% c(1, 666), 1, 
+                                  ifelse(age_diab >= 80, 80, age_diab))),
+         age_gest_diab = ifelse(RHQ163 %in% c(777,999), NA, RHQ163),
+         flag_age_diab_30 = ifelse(age_diab < 30, 1, 0),
+         flag_infnt_sga = ifelse(RHQ250 %in% c(7,9), NA, 
+                                 ifelse(RHQ250 == 1, 1, 0)),
+         n_infnt_sga = ifelse(flag_infnt_sga %in% 0, 0,
+                              ifelse(RHQ260 %in% c(77,99), NA, RHQ260)),
+         n_pretrm_dlvry = ifelse(flag_infnt_sga %in% 0, 0, 
+                                 ifelse(RHD270 %in% c(77,99), NA, RHD270)),
+         flag_pretrm_dlvry = ifelse(flag_infnt_sga == 0, 0, 
+                                    ifelse(n_pretrm_dlvry > 0, 1, 0)),
+         flag_preg_comp_9906 = ifelse(flag_infnt_sga == 0, 0, 1),
+         flag_2preg_comp_9906 = ifelse(flag_infnt_sga == 0, 0,
+                                       ifelse(flag_pretrm_dlvry == 1, 1, 0)),
+         flag_gdm = ifelse(RHQ162 %in% c(7,9), NA, 
+                           ifelse(RHQ162 == 1, 1, 0)),
+         flag_hst_brstfd = ifelse(RHQ210 %in% c(7,9), NA, 
+                                  ifelse(RHQ210 == 1, 1, 0)),
+         flag_cur_brstfd = ifelse(RHQ200 %in% c(7,9), NA, 
+                                  ifelse(RHQ200 == 1, 1, 0)),
+         flag_any_brstfd = ifelse(is.na(flag_hst_brstfd) & is.na(flag_cur_brstfd), NA,
+                                  ifelse(flag_hst_brstfd %in% 1 | flag_cur_brstfd %in% 1, 1, 0)),
+         n_infnt_brstfd = ifelse(flag_hst_brstfd %in% 0 & flag_cur_brstfd %in% c(0,NA), 0,
+                                 ifelse(RHD230 %in% c(77,99), NA, RHD230)),
+         flag_infnt_brstfd = ifelse(n_infnt_brstfd > 0, 1, 0),
+         flag_any_preg_comp = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"), flag_infnt_sga, flag_gdm),
+         flag_cons_30m = ifelse(BPQ150A == 1 | BPQ150B == 1 | BPQ150C == 1 | BPQ150D == 1, 1, 0),
+         flag_hst_htn = ifelse(BPQ020 %in% c(7,9), NA, 
+                               ifelse(BPQ020 == 1, 1, 0)),
+         flag_htn_trt = ifelse(flag_hst_htn %in% 0, 0, # No history of htn
+                               ifelse(BPQ040A %in% 2, 0, # No history of htn trt
+                                      ifelse(BPQ050A %in% c(7,9), NA, 
+                                             ifelse(BPQ050A == 1, 1, 0)))),
+         flag_stg1_htn = ifelse(flag_htn_trt == 1, 1, 
+                                ifelse(flag_htn_trt == 0 & bpxsy_avg > 130, 1, 
+                                       ifelse(flag_htn_trt == 0 & bpxdi_avg > 80, 1, 0))),
+         bpxsy_avg_trt = ifelse(flag_htn_trt == 1, bpxsy_avg, 0),
+         bpxsy_avg_untrt = ifelse(flag_htn_trt == 0, bpxsy_avg, 0),
+         cho_total = LBXTC,
+         cho_hdl = ifelse(cycle %in% c('1999-2000', '2001-2002'), LBDHDL,
+                          ifelse(cycle %in% c('2003-2004'), LBXHDD, LBDHDD)),
+         SMQ020 = ifelse(SMQ020 %in% c(7,9), NA, SMQ020),
+         SMD030 = ifelse(SMD030 %in% c(777,999), NA, SMD030),
+         SMQ040 = ifelse(SMQ040 %in% c(7,9), NA, SMQ040),
+         flag_smkng_cur = ifelse(is.na(SMQ020) & is.na(SMQ040), NA,
+                                 ifelse(SMQ020 == 1 & SMQ040 %in% c(1,2), 1, 0)),
+         flag_smkng_hst = ifelse(is.na(SMQ020) & is.na(SMQ040), NA, 
+                                 ifelse(SMQ020 == 1 & SMQ040 %in% c(3), 1, 0)),
+         flag_smkng_nvr = ifelse(SMD030 == 0, 1, 0),
+         flag_smkng_100 = ifelse(SMQ020 == 1, 1, 0),
+         cot_lvl = LBXCOT,
+         flag_cot_lvl10 = ifelse(LBXCOT > 10, 1, 0),
+         flag_diab_hst = ifelse(DIQ010 %in% c(7,9), NA,
+                                ifelse(DIQ010 == 1, 1, 0)),
+         flag_diab_trt_pill = ifelse(cycle %in% c("2005-2006", "2007-2008"), DID070, DIQ070),
+         flag_diab_trt_pill = ifelse(flag_diab_hst %in% 0, 0, # No history of diabetes
+                                     ifelse(flag_diab_trt_pill %in% c(7,9), NA,
+                                            ifelse(flag_diab_trt_pill == 1, 1, 0))),
+         flag_diab_trt_ins = ifelse(DIQ050 %in% c(7,9), NA,
+                                    ifelse(DIQ050 == 1, 1, 0)),
+         fglu = LBXGLU,
+         flag_diab_fglu = ifelse(fglu >= 126, 1, 0),
+         a1c = LBXGH,
+         flag_diab_a1c = ifelse(a1c >= 6.5, 1, 0),
+         ogtt = LBXGLT,
+         flag_diab_ogtt = ifelse(ogtt >= 200, 1, 0),
+         flag_hst_chf = ifelse(MCQ160B %in% c(7,9), NA,
+                               ifelse(MCQ160B == 1, 1, 0)),
+         flag_hst_chd = ifelse(MCQ160C %in% c(7,9), NA,
+                               ifelse(MCQ160C == 1, 1, 0)),
+         flag_hst_angn = ifelse(MCQ160D %in% c(7,9), NA,
+                               ifelse(MCQ160D == 1, 1, 0)),
+         flag_hst_hattck = ifelse(MCQ160E %in% c(7,9), NA,
+                               ifelse(MCQ160E == 1, 1, 0)),
+         flag_hst_strk = ifelse(MCQ160F %in% c(7,9), NA,
+                               ifelse(MCQ160F == 1, 1, 0)),
+         flag_rhmtd_arth = ifelse(MCQ160A %in% 2, 0, # No history of arthritis
+                                  ifelse(is.na(MCQ190) & is.na(MCQ191) & is.na(MCQ195), NA,
+                                         ifelse(MCQ190 %in% 1 | MCQ191 %in% 1 | MCQ195 %in% 2, 1, 0))) ,
+         flag_hst_cvd = ifelse(is.na(flag_hst_chf) &
+                               is.na(flag_hst_chd) &
+                               is.na(flag_hst_angn) &
+                               is.na(flag_hst_hattck) &
+                               is.na(flag_hst_strk), NA,
+                               ifelse(flag_hst_chf %in% 1 |
+                                      flag_hst_chd %in% 1 |
+                                      flag_hst_angn %in% 1 |
+                                      flag_hst_hattck %in% 1 |
+                                      flag_hst_strk %in% 1, 1, 0)),
+         flag_leading_hrt = ifelse(ucod_leading == 1, 1, 0),
+         flag_leading_crbr = ifelse(ucod_leading == 5, 1, 0),
+         flag_leading_diab = ifelse(ucod_leading == 7, 1, 0),
+         flag_mdeath_diab = diabetes,
+         flag_mdeath_htn = hyperten,
+         time_int = permth_int,
+         time_exm = permth_exm,
+         cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
+  )
+
+
+```
+
+**Diabetes Checking**
+
+Diabetes defined initially as any occurrence of:
+
+- History of diabetes (flag_diab_hst)
+- Current treatment for diabetes - pills (flag_diab_trt_ins)
+- Current treatment for diabetes - insuline (flag_diab_trt_ins)
+- Hemoglobin A1c >= 6.5 (flag_diab_a1c)
+- Fasting glucose >= 126 (flag_diab_fglu)
+- Oral glucose tolerance test >= 200 (flag_diab_ogtt)
+
+Using the ogtt would require us to use the sample weight from the OGTT subsample, which is only available from 2005 to 2016. Using the fasting glucose would also reduce the sample size from dataset.
+
+Checking how many observations we get from each criteria:
+
+- flag_diab_fglu_ogtt: using all variables
+- flag_diab_fglu: dropping ogtt variable
+- flag_diab: dropping ogtt and fglu variables
+
+```{r dataCheckDM}
+
+cvd_partial %>%
+  mutate(flag_diab_fglu_ogtt = ifelse(is.na(flag_diab_hst) &
+                                        is.na(flag_diab_trt_pill) &
+                                        is.na(flag_diab_trt_ins) &
+                                        is.na(flag_diab_fglu) &
+                                        is.na(flag_diab_a1c) &
+                                        is.na(flag_diab_ogtt), NA,
+                                      ifelse(flag_diab_hst %in% 1 |
+                                               flag_diab_trt_pill %in% 1 |
+                                               flag_diab_trt_ins %in% 1 |
+                                               flag_diab_fglu %in% 1 |
+                                               flag_diab_a1c %in% 1 |
+                                               flag_diab_ogtt %in% 1, 1, 0)),
+         flag_diab_fglu = ifelse(is.na(flag_diab_hst) &
+                                   is.na(flag_diab_trt_pill) &
+                                   is.na(flag_diab_trt_ins) &
+                                   is.na(flag_diab_fglu) &
+                                   is.na(flag_diab_a1c), NA,
+                                 ifelse(flag_diab_hst %in% 1 |
+                                          flag_diab_trt_pill %in% 1 |
+                                          flag_diab_trt_ins %in% 1 |
+                                          flag_diab_fglu %in% 1 |
+                                          flag_diab_a1c %in% 1, 1, 0)),
+         flag_diab = ifelse(is.na(flag_diab_hst) &
+                              is.na(flag_diab_trt_pill) &
+                              is.na(flag_diab_trt_ins) &
+                              is.na(flag_diab_a1c), NA,
+                            ifelse(flag_diab_hst %in% 1 |
+                                     flag_diab_trt_pill %in% 1 |
+                                     flag_diab_trt_ins %in% 1 |
+                                     flag_diab_a1c %in% 1, 1, 0))) %>%
+  group_by(flag_diab_fglu_ogtt, flag_diab_fglu, flag_diab) %>%
+  summarise(n = n()) %>%
+  ungroup %>%
+  mutate(freq = n/sum(n)*100) %>% 
+  kable(format.args = list(big.mark = ","), align=rep('c', 3), digits = 2) %>% 
+  kable_styling()
+```
+
+Since the number of observations captured exclusively by ogtt and fglu is small, these variables will be dropped from the diabetes criteria (meeting July 3rd):
+
+- History of diabetes (flag_diab_hst)
+- Current treatment for diabetes - pills (flag_diab_trt_ins)
+- Current treatment for diabetes - insuline (flag_diab_trt_ins)
+- Hemoglobin A1c >= 6.5 (flag_diab_a1c)
+
+With this criteria, we will use the EXAM sample weight for the analyses.
+
+Since th variables of infant SGA and pre-term delivery are available for 1999-2006 and gestational diabetes is available for 2007-2014, we will do the analyses separated according to cohorts (1999-2006 and 2007-2014). So, we also need to create sample weights for the two cohorts:
+
+```{r varConstr2}
+
+cvd_partial =
+  cvd_partial %>%
+  mutate(flag_diab = ifelse(is.na(flag_diab_hst) &
+                              is.na(flag_diab_trt_pill) &
+                              is.na(flag_diab_trt_ins) &
+                              is.na(flag_diab_a1c), NA,
+                            ifelse(flag_diab_hst %in% 1 |
+                                     flag_diab_trt_pill %in% 1 |
+                                     flag_diab_trt_ins %in% 1 |
+                                     flag_diab_a1c %in% 1, 1, 0)),
+         WTMEC = ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
+         cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
+         WTMEC_C1 = ifelse(cohort == 2, NA, 
+                           ifelse(cycle %in% c("1999-2000", "2001-2002"), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
+         WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR)) 
+
+```
+
+### Study population
+
+Since we are dealing with complex survey, we will need to use the dataset containing all observations and include a variable to identify the subpopulation of interest:
+
+* Women (gender) 
+* Age 40-79 (age)
+* No history of cardiovascular disease at baseline including:
+    + Congestive Heart Failure (flag_hst_chf)
+    + Coronary Heart Disease (flag_hst_chd)
+    + Angina (flag_hst_angn)
+    + Heart Attack (flag_hst_hattck)
+    + Stroke (flag_hst_strk)
+* Pregnancy history, including current pregnancy (flag_preg_eli)
+
+```{r targetPop}
+
+cvd_partial =
+  cvd_partial %>% 
+  mutate(flag_subpop = ifelse(gender == 2 &
+                                age >= 40 &
+                                age <= 79 &
+                                !(flag_hst_cvd %in% 1) &
+                                flag_preg_eli %in% 1, 1, 0)) 
+
+```
+
+Saving final dataset:
+
+```{r saveFinalData}
+
+cvd_partial %>% 
+  saveRDS(file = 'cvd_partial.rds')
+
+cvd_partial %>% 
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+  saveRDS(file = 'cvd_final.rds')
+
+cvd_partial %>% 
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+  write.csv(file = 'cvd_final.csv', na = "")
+
+```
+
+## Data description
+
+NHANES tutorials [here](https://www.cdc.gov/nchs/tutorials/nhanes/index_continuous.htm)
+
+### NHANES Sample Design
+
+*Source:*
+
+- [NHANES Analytic Guidelines 1999-2010](https://www.cdc.gov/nchs/data/series/sr_02/sr02_161.pdf)
+
+- [NHANES Analytic Guidelines 2011-2016](https://wwwn.cdc.gov/nchs/data/nhanes/2011-2012/analyticguidelines/analytic_guidelines_11_16.pdf)
+
+NHANES data are not obtained using a simple random sample. Rather, a complex, multistage probability
+sampling design is used to select a sample representative of the civilian noninstitutionalized resident population of the United State.
+
+NHANES uses a four-stage sampling design: 
+
+1. selection of the primary sampling units (PSUs) (i.e.,
+mostly individual counties);
+2. selection of segments within the counties; 
+3. selection of dwelling units (DUs) or households within segments;
+4. selection of individuals within a household. 
+
+Since 1999, the annual sample size has been approximately 5,000 individuals from 15 different locations (12 locations for 1999) selected from a sampling frame that includes all 50 states and the
+District of Columbia.
+
+The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.
+
+### Descriptives
+
+```{r RunningDescriptives, warning=FALSE}
+
+ source('8 - Descriptives.R')
+ source('8 - Descriptives_9906.R')
+ source('8 - Descriptives_0716.R')
+
+```
+
+The output was included on Descriptives.xlsx file.
+
+Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.
+
