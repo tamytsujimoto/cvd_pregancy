@@ -1,0 +1,27 @@
+---
+title: "CVD Project - Aim 1 - Notebook"
+author: "Tamy Tsujimoto"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: paper 
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data Analysis
+
+From the descriptives from data assembly, it was decided to analyse only the 1999-2006 cohort only because the number of CVD events in 2007-2014 was too low. Thus, we will consider only the information of infant SGA/preterm:
+
+- No SGA
+- SGA but not preterm
+- SGA and preterm
+
+## Bivariate Analysis
+
+## Survival Analysis
