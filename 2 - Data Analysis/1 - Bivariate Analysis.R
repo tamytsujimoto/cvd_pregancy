@@ -19,9 +19,13 @@ cvd_data =
                  flag_diab,
                  mortstat,
                  ucod_leading,
+                 flag_mdeath_diab,
+                 flag_mdeath_htn,
                  cvd_outcome,
+                 cvd_outcome2,
                  flag_any_brstfd,
-                 flag_rhmtd_arth), funs(as.factor(.)))
+                 flag_rhmtd_arth), funs(as.factor(.))) %>% 
+  mutate()
 
 ##########################
 # DEFINING SURVEY DESIGN #
@@ -39,9 +43,9 @@ nhanes <- svydesign(id=~SDMVPSU,
 
 source('cvd_biv.R')
 
-###############
-# SGA/PRETERM #
-###############
+#######
+# SGA #
+#######
 
 cat = c('race',
         'educ_level',
@@ -52,7 +56,10 @@ cat = c('race',
         'flag_diab',
         'mortstat',
         'ucod_leading',
-        'cvd_outcome')
+        'flag_mdeath_diab',
+        'flag_mdeath_htn',
+        'cvd_outcome',
+        'cvd_outcome2')
 
 cont = c('age',
          'bpxsy_avg',
@@ -63,12 +70,34 @@ cont = c('age',
          'time_int',
          'time_exm')
 
-cvd_biv(cat = cat, cont = cont, by = 'sga_pretrm') %>% 
+cvd_data %>% 
+  filter(flag_subpop == 1) %>% 
+  group_by(flag_infnt_sga) %>% 
+  summarise(n = n())
+
+cvd_biv(cat = cat, cont = cont, by = 'flag_infnt_sga') %>% 
   write.csv('Output/biv_sga.csv', row.names = FALSE)
+
+###############
+# SGA/PRETERM #
+###############
+
+cvd_data %>% 
+  filter(flag_subpop == 1) %>% 
+  group_by(sga_pretrm) %>% 
+  summarise(n = n())
+
+cvd_biv(cat = cat, cont = cont, by = 'sga_pretrm') %>% 
+  write.csv('Output/biv_sga_pret.csv', row.names = FALSE)
 
 #################
 # BREASTFEEDING #
 #################
+
+cvd_data %>% 
+  filter(flag_subpop == 1) %>% 
+  group_by(flag_any_brstfd) %>% 
+  summarise(n = n())
 
 cvd_biv(cat = cat, cont = cont, by = 'flag_any_brstfd') %>% 
   write.csv('Output/biv_brstfd.csv', row.names = FALSE)
@@ -76,6 +105,11 @@ cvd_biv(cat = cat, cont = cont, by = 'flag_any_brstfd') %>%
 ######
 # RA #
 ######
+
+cvd_data %>% 
+  filter(flag_subpop == 1) %>% 
+  group_by(flag_rhmtd_arth) %>% 
+  summarise(n = n())
 
 cvd_biv(cat = cat, cont = cont, by = 'flag_rhmtd_arth') %>% 
   write.csv('Output/biv_ra.csv', row.names = FALSE)

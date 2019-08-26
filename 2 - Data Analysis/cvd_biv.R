@@ -15,9 +15,17 @@ cvd_biv = function(cat, cont, by) {
     p = regTermTest(svyglm(as.formula(paste(var, by, sep = '~')), subset(nhanes, flag_subpop == 1)), 
                 as.formula(paste0('~',by)))$p
     
+    n = cvd_data %>% 
+      filter(flag_subpop == 1) %>% 
+      group_by(get(by)) %>% 
+      summarise(n = sum(!is.na(get(var))))
+    
+    colnames(n) = c('by', 'n')
     colnames(mean) <- c('by', 'avg', 'ci_l', 'ci_u')
+    
     aux =
       mean %>% 
+      left_join(n, by = 'by') %>% 
       gather("stat", "value", -by) %>% 
       mutate(aux = paste0(by, stat)) %>% 
       select(value, aux) %>% 
@@ -26,6 +34,7 @@ cvd_biv = function(cat, cont, by) {
              p = p)
     
     result <- bind_rows(result, aux)
+    
     }
  
   # CATEGORICAL #
@@ -41,10 +50,19 @@ cvd_biv = function(cat, cont, by) {
     p = svychisq(as.formula(paste0('~',paste(var, by, sep = '+'))), 
                  subset(nhanes, flag_subpop == 1), statistic = "Chisq")$p.value
     
+    n = cvd_data %>% 
+      filter(flag_subpop == 1, !is.na(get(var))) %>% 
+      group_by(get(by), get(var)) %>% 
+      summarise(n = n()) %>% 
+      spread(`get(var)`, 'n')
+    
+    colnames(n) <- c('by', paste0('n', l))
+    
     colnames(mean) <- c('by', paste0('avg', l), paste0('ci_l', l), paste0('ci_u', l))
     
     aux =
       mean %>% 
+      left_join(n, by = 'by') %>% 
       gather("stat", "value", -by) %>% 
       extract(stat, "level", "([0-9]+)", remove = FALSE) %>% 
       separate(stat, into = c("stat", "aux"), sep = "([0-9]+)") %>% 
