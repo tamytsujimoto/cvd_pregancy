@@ -74,7 +74,8 @@ cvd_final =
                  flag_leading_diab,
                  flag_mdeath_diab,
                  flag_mdeath_htn,
-                 cvd_outcome), funs(as.factor(.))) %>% 
+                 cvd_outcome,
+                 cvd_outcome2), funs(as.factor(.))) %>% 
   filter(cohort == 1)
 
 ##########################
@@ -177,6 +178,7 @@ cvd_desc(cat = c('flag_reg_prd',
          cont = c(
            'age_frst_prd',
            'age_lst_prd',
+           'age_lst_prd2',
            'age_both_ovry_remov'),
          filename = 'gyn_9906')
 
@@ -228,7 +230,8 @@ cvd_desc(cat = c('mortstat',
                  'ucod_leading',
                  'flag_mdeath_diab',
                  'flag_mdeath_htn',
-                 'cvd_outcome'),
+                 'cvd_outcome',
+                 'cvd_outcome2'),
          cont = c(
            'time_int',
            'time_exm'),

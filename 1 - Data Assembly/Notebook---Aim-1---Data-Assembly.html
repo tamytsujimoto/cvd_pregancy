@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-08-09" />
+<meta name="date" content="2019-08-25" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">08/09/2019</h4>
+<h4 class="date">08/25/2019</h4>
 
 </div>
 
@@ -3036,6 +3036,7 @@ weights %&gt;%
          ovry_remov = ifelse(ovry_remov %in% c(7,9), NA, ovry_remov),
          ovry_remov = ifelse(RHQ300 %in% 2, 0, ovry_remov),
          flag_both_ovry_remov = ifelse(ovry_remov == 1, 1, 0),
+         age_lst_prd2 = ifelse(flag_both_ovry_remov == 1, NA, age_lst_prd),
          age_both_ovry_remov = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;, &quot;2003-2004&quot;, &quot;2005-2006&quot;),
                                       RHQ330,
                                       RHQ332),
@@ -3186,6 +3187,9 @@ weights %&gt;%
          time_int = permth_int,
          time_exm = permth_exm,
          cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
+         cvd_outcome2 = ifelse(cvd_outcome == 1, 1, 
+                               ifelse(flag_mdeath_diab == 1, 1, 
+                                      ifelse(flag_mdeath_htn == 1, 1, 0)))
   )</code></pre>
 <p><strong>Diabetes Checking</strong></p>
 <p>Diabetes defined initially as any occurrence of:</p>
@@ -3435,16 +3439,8 @@ cvd_partial %&gt;%
 </div>
 <div id="descriptives" class="section level3">
 <h3>Descriptives</h3>
-<pre class="r"><code> source('8 - Descriptives.R')</code></pre>
-<pre><code>## Registered S3 method overwritten by 'pryr':
-##   method      from
-##   print.bytes Rcpp</code></pre>
-<pre><code>## 
-## Attaching package: 'summarytools'</code></pre>
-<pre><code>## The following object is masked from 'package:tibble':
-## 
-##     view</code></pre>
-<pre class="r"><code> source('8 - Descriptives_9906.R')
+<pre class="r"><code> source('8 - Descriptives.R')
+ source('8 - Descriptives_9906.R')
  source('8 - Descriptives_0716.R')</code></pre>
 <p>The output was included on Descriptives.xlsx file.</p>
 <p>Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.</p>

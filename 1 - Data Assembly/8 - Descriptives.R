@@ -1,6 +1,6 @@
-library(tidyverse)
-library(survey)
-library(summarytools)
+# library(tidyverse)
+# library(survey)
+# library(summarytools)
 
 ################
 # LOADING DATA #
@@ -72,7 +72,8 @@ cvd_final =
                  flag_leading_diab,
                  flag_mdeath_diab,
                  flag_mdeath_htn,
-                 cvd_outcome), funs(as.factor(.)))
+                 cvd_outcome,
+                 cvd_outcome2), funs(as.factor(.))) 
 
 ##########################
 # DEFINING SURVEY DESIGN #
@@ -217,7 +218,8 @@ cvd_desc(cat = c('mortstat',
                  'ucod_leading',
                  'flag_mdeath_diab',
                  'flag_mdeath_htn',
-                 'cvd_outcome'),
+                 'cvd_outcome',
+                 'cvd_outcome2'),
          cont = c(
            'time_int',
            'time_exm'),

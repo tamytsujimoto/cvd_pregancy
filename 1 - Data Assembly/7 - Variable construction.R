@@ -81,6 +81,7 @@ cvd_partial =
          ovry_remov = ifelse(ovry_remov %in% c(7,9), NA, ovry_remov),
          ovry_remov = ifelse(RHQ300 %in% 2, 0, ovry_remov),
          flag_both_ovry_remov = ifelse(ovry_remov == 1, 1, 0),
+         age_lst_prd2 = ifelse(flag_both_ovry_remov == 1, NA, age_lst_prd),
          age_both_ovry_remov = ifelse(cycle %in% c("1999-2000", "2001-2002", "2003-2004", "2005-2006"),
                                       RHQ330,
                                       RHQ332),
@@ -231,6 +232,9 @@ cvd_partial =
          time_int = permth_int,
          time_exm = permth_exm,
          cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
+         cvd_outcome2 = ifelse(cvd_outcome == 1, 1, 
+                               ifelse(flag_mdeath_diab == 1, 1, 
+                                      ifelse(flag_mdeath_htn == 1, 1, 0)))
   )
 
 # DIABETES CHECKING #
