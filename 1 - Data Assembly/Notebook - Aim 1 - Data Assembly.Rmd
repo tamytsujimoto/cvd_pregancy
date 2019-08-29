@@ -602,6 +602,8 @@ cvd_partial =
                                  ifelse(RHD270 %in% c(77,99), NA, RHD270)),
          flag_pretrm_dlvry = ifelse(flag_infnt_sga == 0, 0, 
                                     ifelse(n_pretrm_dlvry > 0, 1, 0)),
+         sga_pretrm = ifelse(flag_infnt_sga == 1 & flag_pretrm_dlvry == 1, 2, 
+                             ifelse(flag_infnt_sga == 1, 1, 0)),
          flag_preg_comp_9906 = ifelse(flag_infnt_sga == 0, 0, 1),
          flag_2preg_comp_9906 = ifelse(flag_infnt_sga == 0, 0,
                                        ifelse(flag_pretrm_dlvry == 1, 1, 0)),
