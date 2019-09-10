@@ -5,11 +5,10 @@ library(survey)
 cvd_data =
   readRDS(file = '../1 - Data Assembly/cvd_final.rds') %>% 
   filter(cohort == 1) %>% 
-  mutate(sga_pretrm = ifelse(flag_infnt_sga == 1 & flag_pretrm_dlvry == 1, 2, 
-                              ifelse(flag_infnt_sga == 1, 1, 0)),
-         sga_pretrm = as.factor(sga_pretrm),
-         bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
-         bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt)) %>% 
+  mutate(bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
+         bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt),
+         cvd_outcome = ifelse(is.na(cvd_outcome), 0, cvd_outcome),
+         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2)) %>% 
   mutate_at(vars(race,
                  educ_level,
                  marit_stat,
@@ -24,8 +23,7 @@ cvd_data =
                  cvd_outcome,
                  cvd_outcome2,
                  flag_any_brstfd,
-                 flag_rhmtd_arth), funs(as.factor(.))) %>% 
-  mutate()
+                 flag_rhmtd_arth), funs(as.factor(.))) 
 
 ##########################
 # DEFINING SURVEY DESIGN #

@@ -10,6 +10,8 @@ library(summarytools)
 
 cvd_final = 
   readRDS(file = 'cvd_final.rds') %>% 
+  mutate(cvd_outcome = ifelse(mortstat == 0, 0, cvd_outcome),
+         cvd_outcome2 = ifelse(mortstat == 0, 0, cvd_outcome2)) %>% 
   mutate_at(vars(gender,
                  race,
                  educ_level,
