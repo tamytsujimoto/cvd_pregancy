@@ -236,7 +236,9 @@ cvd_partial =
          cvd_outcome = ifelse(ucod_leading == 1 | ucod_leading == 5, 1, 0),
          cvd_outcome2 = ifelse(cvd_outcome == 1, 1, 
                                ifelse(flag_mdeath_diab == 1, 1, 
-                                      ifelse(flag_mdeath_htn == 1, 1, 0)))
+                                      ifelse(flag_mdeath_htn == 1, 1, 0))),
+         cvd_outcome = ifelse(is.na(cvd_outcome), 0, cvd_outcome),
+         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2)
   )
 
 # DIABETES CHECKING #
