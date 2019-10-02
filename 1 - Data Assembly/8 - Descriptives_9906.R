@@ -10,8 +10,8 @@ library(summarytools)
 
 cvd_final = 
   readRDS(file = 'cvd_final.rds') %>% 
-  mutate(cvd_outcome = ifelse(mortstat == 0, 0, cvd_outcome),
-         cvd_outcome2 = ifelse(mortstat == 0, 0, cvd_outcome2)) %>% 
+  mutate(bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
+         bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt)) %>% 
   mutate_at(vars(gender,
                  race,
                  educ_level,
@@ -67,9 +67,6 @@ cvd_final =
                  flag_hst_cvd,
                  flag_rhmtd_arth,
                  mortstat,
-                 mortstat,
-                 mortstat,
-                 mortstat,
                  ucod_leading,
                  flag_leading_hrt,
                  flag_leading_crbr,
@@ -100,141 +97,233 @@ source('cvd_desc.R')
 # Sociodemographics #
 #####################
 
-cvd_desc(cat = c('gender',
-                 'race',
-                 'educ_level',
-                 'marit_stat',
-                 'hh_income',
-                 'fam_income',
-                 'flag_milit_stat',
-                 'birth_country',
-                 'ctzn_stat',
-                 'yrs_us'),
-         cont = c(
-           'age',
-           'hh_size',
-           'fam_size',
-           'fmpir'),
+cat = c('gender',
+        'race',
+        'educ_level',
+        'marit_stat',
+        'hh_income',
+        'fam_income',
+        'flag_milit_stat',
+        'birth_country',
+        'ctzn_stat',
+        'yrs_us')
+cont = c('age',
+         'hh_size',
+         'fam_size',
+         'fmpir')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop',
          filename = 'demo_9906')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_w',
+         filename = 'demo_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_m',
+         filename = 'demo_9906_m')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_t',
+         filename = 'demo_9906_t')
 
 #############
 # Pregnancy #
 #############
 
-cvd_desc(cat = c('flag_cur_preg',
-                 'flag_hst_preg',
-                 'flag_preg_eli',
-                 #'flag_inft_wght_9lb',
-                 'flag_age_diab_30'
-                 ),
-         cont = c(
-           'n_preg',
-           'n_preg_live',
-           'n_vgnl_dlvry',
-           'age_fst_live_brth',
-           'age_lst_live_brth',
-           #'age_inft_wght_9lb',
-           'age_diab'),
+cat = c('flag_cur_preg',
+        'flag_hst_preg',
+        'flag_preg_eli',
+        #'flag_inft_wght_9lb',
+        'flag_age_diab_30')
+
+cont = c(
+  'n_preg',
+  'n_preg_live',
+  'n_vgnl_dlvry',
+  'age_fst_live_brth',
+  'age_lst_live_brth',
+  #'age_inft_wght_9lb',
+  'age_diab')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop',
          filename = 'preg_9906')
 
-cvd_final %>% 
-  filter(flag_subpop == 1) %>% 
-  select(flag_inft_wght_9lb, age_inft_wght_9lb) %>% 
-  summarise_all(funs(sum(as.numeric(is.na(.)))))
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_w',
+         filename = 'preg_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_t',
+         filename = 'preg_9906_t')
 
 #########################
 # Pregnancy Risk Factor #
 #########################
 
-cvd_desc(cat = c('flag_pretrm_dlvry',
-                 'flag_infnt_sga',
-                 'flag_preg_comp_9906',
-                 'flag_2preg_comp_9906',
-                 #'flag_gdm',
-                 'flag_hst_brstfd',
-                 'flag_cur_brstfd',
-                 'flag_any_brstfd',
-                 'flag_infnt_brstfd',
-                 'flag_any_preg_comp'),
-         cont = c('n_pretrm_dlvry',
-                  'n_infnt_sga',
-                  #'age_gest_diab',
-                  'n_infnt_brstfd'),
+cat = c('flag_pretrm_dlvry',
+        'flag_infnt_sga',
+        'flag_preg_comp_9906',
+        'flag_2preg_comp_9906',
+        #'flag_gdm',
+        'flag_hst_brstfd',
+        'flag_cur_brstfd',
+        'flag_any_brstfd',
+        'flag_infnt_brstfd',
+        'flag_any_preg_comp')
+
+cont = c('n_pretrm_dlvry',
+         'n_infnt_sga',
+         #'age_gest_diab',
+         'n_infnt_brstfd')
+
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop',
          filename = 'pregrisk_9906')
 
-cvd_final %>% 
-  filter(flag_subpop == 1) %>% 
-  select(flag_gdm, age_gest_diab) %>% 
-  summarise_all(funs(sum(as.numeric(is.na(.)))))
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop_w',
+         filename = 'pregrisk_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop_t',
+         filename = 'pregrisk_9906_t')
+
 
 ##############
 # Gynecology #
 ##############
 
-cvd_desc(cat = c('flag_reg_prd',
-                 'flag_regprd_preg',
-                 'flag_both_ovry_remov',
-                 'flag_bth_cntrl_hst',
-                 'flag_bth_cntrl_now',
-                 'flag_estprog_ptch_hst'),
-         cont = c(
-           'age_frst_prd',
-           'age_lst_prd',
-           'age_lst_prd2',
-           'age_both_ovry_remov'),
+cat = c('flag_reg_prd',
+        'flag_regprd_preg',
+        'flag_both_ovry_remov',
+        'flag_bth_cntrl_hst',
+        'flag_bth_cntrl_now',
+        'flag_estprog_ptch_hst')
+
+cont = c('age_frst_prd',
+  'age_lst_prd',
+  'age_lst_prd2',
+  'age_both_ovry_remov')
+
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop',
          filename = 'gyn_9906')
+
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop_w',
+         filename = 'gyn_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop='flag_subpop_t',
+         filename = 'gyn_9906_t')
 
 ###############
 # Traditional #
 ###############
 
-cvd_desc(cat = c('flag_cons_30m',
-                 'flag_hst_htn',
-                 'flag_htn_trt',
-                 'flag_stg1_htn',
-                 'flag_smkng_cur',
-                 'flag_smkng_hst',
-                 'flag_smkng_nvr',
-                 'flag_smkng_100',
-                 'flag_cot_lvl10',
-                 'flag_diab_hst',
-                 'flag_diab_trt_pill',
-                 'flag_diab_trt_ins',
-                 'flag_diab_fglu',
-                 'flag_diab_a1c',
-                 'flag_diab_ogtt',
-                 'flag_diab',
-                 'flag_hst_chf',
-                 'flag_hst_chd',
-                 'flag_hst_angn',
-                 'flag_hst_hattck',
-                 'flag_hst_strk',
-                 'flag_hst_cvd',
-                 'flag_rhmtd_arth'),
-         cont = c(
-           'bpxsy_avg',
-           'bpxdi_avg',
-           'bpxsy_avg_trt',
-           'bpxsy_avg_untrt',
-           'cho_total',
-           'cho_hdl',
-           'cot_lvl',
-           'fglu',
-           'a1c',
-           'ogtt'),
+cat = c('flag_cons_30m',
+        'flag_hst_htn',
+        'flag_htn_trt',
+        'flag_stg1_htn',
+        'flag_smkng_cur',
+        'flag_smkng_hst',
+        'flag_smkng_nvr',
+        'flag_smkng_100',
+        'flag_cot_lvl10',
+        'flag_diab_hst',
+        'flag_diab_trt_pill',
+        'flag_diab_trt_ins',
+        'flag_diab_fglu',
+        'flag_diab_a1c',
+        'flag_diab_ogtt',
+        'flag_diab',
+        'flag_hst_chf',
+        'flag_hst_chd',
+        'flag_hst_angn',
+        'flag_hst_hattck',
+        'flag_hst_strk',
+        'flag_hst_cvd',
+        'flag_rhmtd_arth')
+
+cont = c(
+  'bpxsy_avg',
+  'bpxdi_avg',
+  'bpxsy_avg_trt',
+  'bpxsy_avg_untrt',
+  'cho_total',
+  'cho_hdl',
+  'cot_lvl',
+  'fglu',
+  'a1c',
+  'ogtt')
+
+cvd_desc(cat, 
+         cont, 
+         subpop='flag_subpop',
          filename = 'trad_9906')
+
+cvd_desc(cat, 
+         cont, 
+         subpop='flag_subpop_m',
+         filename = 'trad_9906_m')
+
+cvd_desc(cat, 
+         cont, 
+         subpop='flag_subpop_w',
+         filename = 'trad_9906_w')
+
+cvd_desc(cat, 
+         cont, 
+         subpop='flag_subpop_t',
+         filename = 'trad_9906_t')
 
 ############
 # Followup #
 ############
 
-cvd_desc(cat = c('mortstat',
-                 'ucod_leading',
-                 'flag_mdeath_diab',
-                 'flag_mdeath_htn',
-                 'cvd_outcome',
-                 'cvd_outcome2'),
-         cont = c(
-           'time_int',
-           'time_exm'),
+cat = c('mortstat',
+        'ucod_leading',
+        'flag_mdeath_diab',
+        'flag_mdeath_htn',
+        'cvd_outcome',
+        'cvd_outcome2')
+
+cont = c('time_int',
+        'time_exm')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop',
          filename = 'follow_9906')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_m',
+         filename = 'follow_9906_m')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_w',
+         filename = 'follow_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_t',
+         filename = 'follow_9906_t')
+

@@ -300,7 +300,19 @@ cvd_partial =
                                 age >= 40 &
                                 age <= 79 &
                                 !(flag_hst_cvd %in% 1) &
-                                flag_preg_eli %in% 1, 1, 0)) 
+                                flag_preg_eli %in% 1, 1, 0),
+         flag_subpop_w = ifelse(gender == 2 &
+                                  age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_m = ifelse(gender == 1 &
+                                  age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_t = ifelse(age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0)) 
+
   
 
 cvd_partial %>% 
@@ -308,12 +320,12 @@ cvd_partial %>%
 
 cvd_partial %>% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %>% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_partial %>% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %>% 
   write.csv(file = 'cvd_final.csv', na = "")
 
 

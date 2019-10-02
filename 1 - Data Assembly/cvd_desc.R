@@ -1,7 +1,6 @@
 
 
-
-cvd_desc = function(cat, cont, filename) {
+cvd_desc = function(cat, cont, subpop, filename) {
 
 #######
 # NAs #
@@ -12,19 +11,19 @@ all <- c(cat,cont)
 
 # Count NA
 na = 
-  cvd_final[,c(all,'flag_subpop')] %>%
-  filter(flag_subpop == 1) %>%
+  cvd_final[,c(all,subpop)] %>%
+  filter(get(subpop) == 1) %>%
   summarise_all(funs(sum(is.na(.)))) %>%
   gather(key = var, value = n.na) %>%
-  filter(var!='flag_subpop')
+  filter(var!=subpop)
 
 # Count Valid
 valid = 
-  cvd_final[,c(all,'flag_subpop')] %>%
-  filter(flag_subpop == 1) %>%
+  cvd_final[,c(all,subpop)] %>%
+  filter(get(subpop) == 1) %>%
   summarise_all(funs(sum(!is.na(.)))) %>%
   gather(key = var, value = n.valid) %>%
-  filter(var!='flag_subpop')
+  filter(var!=subpop)
 
 perc.na = 
   na %>% 
@@ -53,11 +52,11 @@ for(i in 1:length(cat)){
   
   var = cat[i]
   
-  db = as.data.frame(cvd_final[,c(var,'flag_subpop')]) %>% filter(flag_subpop == 1)
+  db = as.data.frame(cvd_final[,c(var,subpop)]) %>% filter(get(subpop) == 1)
   freq = data.frame(table(db[,1]))
   freq.perc = data.frame(prop.table(table(db[,1])))
   mean = data.frame(svymean(as.formula(paste0('~',paste(cat[i]))), 
-                 subset(nhanes, flag_subpop == 1), na.rm = TRUE))
+                 subset(nhanes, get(subpop) == 1), na.rm = TRUE))
   
   aux = data.frame(var = var,
                    level = freq$Var1,
@@ -89,9 +88,9 @@ for(i in 1:length(cont)){
   
   var = cont[i]
   mean = data.frame(svymean(as.formula(paste0('~',paste(cont[i]))), 
-                            subset(nhanes, flag_subpop == 1), na.rm = TRUE))
+                            subset(nhanes, get(subpop) == 1), na.rm = TRUE))
   quant = data.frame(svyquantile(as.formula(paste0('~',paste(cont[i]))), 
-                     subset(nhanes, flag_subpop == 1), c(0,.25,.5,.75,1), na.rm = TRUE))
+                     subset(nhanes, get(subpop) == 1), c(0,.25,.5,.75,1), na.rm = TRUE))
   
   aux = data.frame(var = var,
                    mean = mean[,1],

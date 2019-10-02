@@ -14,14 +14,232 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r include = FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(survey)
+library(summarytools)
+```
+
 # Data Analysis
 
-From the descriptives from data assembly, it was decided to analyse only the 1999-2006 cohort only because the number of CVD events in 2007-2014 was too low. Thus, we will consider only the information of infant SGA/preterm:
+## Logistic Regression
 
-- No SGA
-- SGA but not preterm
-- SGA and preterm
+Creating pce risk scores
 
-## Bivariate Analysis
+```{r warning=FALSE}
 
-## Survival Analysis
+cvd_data =
+  readRDS(file = '../1 - Data Assembly/cvd_final.rds') %>% 
+  filter(cohort == 1) %>% 
+  mutate_at(vars(age,
+                 cho_total,
+                 cho_hdl), list(ln = log)) %>% 
+  mutate(bpxsy_avg_trt_ln = ifelse(bpxsy_avg_trt == 0, 0, log(bpxsy_avg_trt)),
+         bpxsy_avg_untrt_ln = ifelse(bpxsy_avg_untrt == 0, 0, log(bpxsy_avg_untrt)),
+         pce_score_white = (-29.799)*age_ln+
+           4.884*age_ln^2+ 
+           13.540*cho_total_ln+ 
+           (-3.114)*age_ln*cho_total_ln+
+           (-13.578)*cho_hdl_ln+
+           3.149*age_ln*cho_hdl_ln+
+           2.019*bpxsy_avg_trt_ln+
+           1.957*bpxsy_avg_untrt_ln+
+           7.574*flag_smkng_cur+
+           (-1.665)*age_ln*flag_smkng_cur+
+           0.661*flag_diab-(-29.18),
+         pce_score_black = 17.114*age_ln+
+           0.940*cho_total_ln+ 
+           (-18.920)*cho_hdl_ln+
+           4.475*age_ln*cho_hdl_ln+
+           29.291*bpxsy_avg_trt_ln+
+           (-6.432)*age_ln*bpxsy_avg_trt_ln+
+           27.820*bpxsy_avg_untrt_ln+
+           (-6.087)*age_ln*bpxsy_avg_untrt_ln+
+           0.691*flag_smkng_cur+
+           0.874*flag_diab-86.61,
+         pce_risk_white = (1-0.9665^exp(pce_score_white)),
+         pce_risk_black = (1-0.9533^exp(pce_score_black)),
+         pce_risk = ifelse(race == 4, pce_risk_black, pce_risk_white),
+         pce_risk_cat = ifelse(pce_risk < 0.05, 1, 
+                               ifelse(pce_risk < 0.075, 2, 
+                                      ifelse(pce_risk < 0.2, 3, 4))),
+         pce_risk = pce_risk*100) %>% 
+  mutate(flag_infnt_sga2 = ifelse(flag_preg_eli == 0, 2, flag_infnt_sga), # Creating non-preg category
+         sga_pretrm2 = ifelse(flag_preg_eli == 0, 3, sga_pretrm), # Creating non-preg category
+         flag_any_brstfd2 = ifelse(flag_preg_eli == 0, 2, flag_any_brstfd) # Creating non-preg category
+         ) %>% 
+  mutate_at(vars(pce_risk_cat,
+                 flag_infnt_sga,
+                 flag_infnt_sga2,
+                 flag_any_brstfd,
+                 flag_any_brstfd2,
+                 flag_rhmtd_arth), funs(as.factor(.))) 
+
+```
+
+Specifying survey design
+
+```{r}
+
+##########################
+# DEFINING SURVEY DESIGN #
+##########################
+
+nhanes <- svydesign(id=~SDMVPSU, 
+                    strata=~SDMVSTRA, 
+                    nest=TRUE, 
+                    weights=~WTMEC_C1, 
+                    data=cvd_data)
+
+```
+
+Fitting the logistic regression for survey data:
+
+```{r warning=FALSE}
+
+sga.cont = svyglm(cvd_outcome ~ flag_infnt_sga + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+sga.cat = svyglm(cvd_outcome ~ flag_infnt_sga + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+brt.cont = svyglm(cvd_outcome ~ flag_any_brstfd + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+brt.cat = svyglm(cvd_outcome ~ flag_any_brstfd + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+ra.cont = svyglm(cvd_outcome ~ flag_rhmtd_arth + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+ra.cat = svyglm(cvd_outcome ~ flag_rhmtd_arth + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+sga.cont2 = svyglm(cvd_outcome2 ~ flag_infnt_sga + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+sga.cat2 = svyglm(cvd_outcome2 ~ flag_infnt_sga2 + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+brt.cont2 = svyglm(cvd_outcome2 ~ flag_any_brstfd + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+brt.cat2 = svyglm(cvd_outcome2 ~ flag_any_brstfd + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+ra.cont2 = svyglm(cvd_outcome2 ~ flag_rhmtd_arth + pce_risk, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+
+ra.cat2 = svyglm(cvd_outcome2 ~ flag_rhmtd_arth + pce_risk_cat, 
+                  family = binomial(link="logit"),
+                  design = subset(nhanes, flag_subpop == 1)); 
+```
+
+### CVD Outcomes
+
+```{r echo=FALSE}
+
+kable(summary(sga.cont)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table1: CVD outcome by SGA and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(sga.cat)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table2: CVD outcome by SGA and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(brt.cont)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table3: CVD outcome by Breastfeeding and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(brt.cat)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table4: CVD outcome by Breastfeeding and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(ra.cont)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table5: CVD outcome by RA and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(ra.cat)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table6: CVD outcome by RA and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+```
+
+### CVD Outcomes + Hypertension/diabetes
+
+```{r echo=FALSE}
+
+kable(summary(sga.cont2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table7: CVD outcome + HTN/DM by SGA and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(sga.cat2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table8: CVD outcome + HTN/DM by SGA and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(brt.cont2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table9: CVD outcome + HTN/DM by Breastfeeding and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(brt.cat2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table10: CVD outcome + HTN/DM by Breastfeeding and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(ra.cont2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table11: CVD outcome + HTN/DM by RA and AHA PCE Risk (%)",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+kable(summary(ra.cat2)$coefficients,
+      digits = 3,
+      col.names = c("Estimate", "Std. Error", "t Value", "P-value"),
+      caption = "Table12: CVD outcome + HTN/DM by RA and categories of AHA PCE Risk",
+      align = c("l", "c", "c", "c")
+) %>% kable_styling()
+
+```

@@ -42,7 +42,11 @@ cvd_data =
                                ifelse(pce_risk < 0.075, 2, 
                                       ifelse(pce_risk < 0.2, 3, 4)))) %>% 
   mutate(bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
-         bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt)) %>% 
+         bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt),
+         flag_infnt_sga2 = ifelse(flag_preg_eli == 0, 2, flag_infnt_sga), # Creating non-preg category
+         sga_pretrm2 = ifelse(flag_preg_eli == 0, 3, sga_pretrm), # Creating non-preg category
+         flag_any_brstfd2 = ifelse(flag_preg_eli == 0, 2, flag_any_brstfd) # Creating non-preg category
+         ) %>% 
   mutate_at(vars(race,
                  educ_level,
                  marit_stat,
@@ -86,7 +90,23 @@ cvd_final =
 
 cvd_desc(cat = c('pce_risk_cat'),
          cont = c('pce_risk'),
+         subpop = 'flag_subpop',
          filename = 'pce')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_m',
+         filename = 'pce_m')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_w',
+         filename = 'pce_w')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_t',
+         filename = 'pce_t')
 
 #############
 # BIVARIATE #
@@ -115,24 +135,78 @@ cont = c('age',
          'time_int',
          'time_exm')
 
-cvd_data %>% 
-  filter(flag_subpop == 1) %>% 
-  group_by(pce_risk_cat) %>% 
-  summarise(n = n())
+#######
+# SGA #
+#######
 
-cvd_biv(cat = cat, cont = cont, by = 'pce_risk_cat') %>% 
-  write.csv('Output/biv_pce_risk_cat.csv', row.names = FALSE)
-
-cvd_biv(cat = 'pce_risk_cat', cont = 'pce_risk', by = 'flag_infnt_sga') %>% 
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop',
+        by = 'flag_infnt_sga2') %>% 
   write.csv('Output/biv_sga_pce.csv', row.names = FALSE)
 
-cvd_biv(cat = 'pce_risk_cat', cont = 'pce_risk', by = 'sga_pretrm') %>% 
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_w',
+        by = 'flag_infnt_sga2') %>% 
+  write.csv('Output/biv_sga_pce_w.csv', row.names = FALSE)
+
+###############
+# SGA/PRETERM #
+###############
+
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop',
+        by = 'sga_pretrm2') %>% 
   write.csv('Output/biv_sga_pret_pce.csv', row.names = FALSE)
 
-cvd_biv(cat = 'pce_risk_cat', cont = 'pce_risk', by = 'flag_any_brstfd') %>% 
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_w',
+        by = 'sga_pretrm2') %>% 
+  write.csv('Output/biv_sga_pret_pce_w.csv', row.names = FALSE)
+
+#################
+# BREASTFEEDING #
+#################
+
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop',
+        by = 'flag_any_brstfd2') %>% 
   write.csv('Output/biv_brstfd_pce.csv', row.names = FALSE)
 
-cvd_biv(cat = 'pce_risk_cat', cont = 'pce_risk', by = 'flag_rhmtd_arth') %>% 
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_w',
+        by = 'flag_any_brstfd2') %>% 
+  write.csv('Output/biv_brstfd_pce_w.csv', row.names = FALSE)
+
+######
+# RA #
+######
+
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop',
+        by = 'flag_rhmtd_arth') %>% 
   write.csv('Output/biv_ra_pce.csv', row.names = FALSE)
 
-  
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_w',
+        by = 'flag_rhmtd_arth') %>% 
+  write.csv('Output/biv_ra_pce_w.csv', row.names = FALSE)
+
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_m',
+        by = 'flag_rhmtd_arth') %>% 
+  write.csv('Output/biv_ra_pce_m.csv', row.names = FALSE)
+
+cvd_biv(cat = 'pce_risk_cat', 
+        cont = 'pce_risk', 
+        subpop = 'flag_subpop_t',
+        by = 'flag_rhmtd_arth') %>% 
+  write.csv('Output/biv_ra_pce_t.csv', row.names = FALSE)

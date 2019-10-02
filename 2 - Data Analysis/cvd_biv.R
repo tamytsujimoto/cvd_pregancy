@@ -1,5 +1,5 @@
 
-cvd_biv = function(cat, cont, by) {
+cvd_biv = function(cat, cont, subpop, by) {
   
   result <- data.frame()
   
@@ -11,12 +11,13 @@ cvd_biv = function(cat, cont, by) {
     
     mean = svyby(as.formula(paste0('~',var)), 
               as.formula(paste0('~',by)), 
-              subset(nhanes, flag_subpop == 1), svymean, vartype = 'ci', na.rm = TRUE)
-    p = regTermTest(svyglm(as.formula(paste(var, by, sep = '~')), subset(nhanes, flag_subpop == 1)), 
+              subset(nhanes, get(subpop) == 1), svymean, vartype = 'ci', na.rm = TRUE)
+    p = regTermTest(svyglm(as.formula(paste(var, by, sep = '~')), 
+                           subset(nhanes, get(subpop) == 1)), 
                 as.formula(paste0('~',by)))$p
     
     n = cvd_data %>% 
-      filter(flag_subpop == 1) %>% 
+      filter(get(subpop) == 1) %>% 
       group_by(get(by)) %>% 
       summarise(n = sum(!is.na(get(var))))
     
@@ -46,12 +47,12 @@ cvd_biv = function(cat, cont, by) {
     
     mean = svyby(as.formula(paste0('~',var)), 
                  as.formula(paste0('~',by)), 
-                 subset(nhanes, flag_subpop == 1), svymean, vartype = 'ci', na.rm = TRUE)
+                 subset(nhanes, get(subpop) == 1), svymean, vartype = 'ci', na.rm = TRUE)
     p = svychisq(as.formula(paste0('~',paste(var, by, sep = '+'))), 
-                 subset(nhanes, flag_subpop == 1), statistic = "Chisq")$p.value
+                 subset(nhanes, get(subpop) == 1), statistic = "Chisq")$p.value
     
     n = cvd_data %>% 
-      filter(flag_subpop == 1, !is.na(get(var))) %>% 
+      filter(get(subpop) == 1, !is.na(get(var))) %>% 
       group_by(get(by), get(var)) %>% 
       summarise(n = n()) %>% 
       spread(`get(var)`, 'n')
