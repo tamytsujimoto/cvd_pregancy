@@ -238,7 +238,12 @@ cvd_partial =
                                ifelse(flag_mdeath_diab == 1, 1, 
                                       ifelse(flag_mdeath_htn == 1, 1, 0))),
          cvd_outcome = ifelse(is.na(cvd_outcome), 0, cvd_outcome),
-         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2)
+         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2),
+         flag_hst_cancer = ifelse(MCQ220 %in% c(7,9), NA, 
+                                  ifelse(MCQ220 == 1, 1, 0)),
+         flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
+                                       ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
+         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E)
   )
 
 # DIABETES CHECKING #

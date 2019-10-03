@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-09-11" />
+<meta name="date" content="2019-10-02" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">09/11/2019</h4>
+<h4 class="date">10/02/2019</h4>
 
 </div>
 
@@ -3193,7 +3193,12 @@ weights %&gt;%
                                ifelse(flag_mdeath_diab == 1, 1, 
                                       ifelse(flag_mdeath_htn == 1, 1, 0))),
          cvd_outcome = ifelse(is.na(cvd_outcome), 0, cvd_outcome),
-         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2)
+         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2),
+         flag_hst_cancer = ifelse(MCQ220 %in% c(7,9), NA, 
+                                  ifelse(MCQ220 == 1, 1, 0)),
+         flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
+                                       ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
+         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E)
   )</code></pre>
 <p><strong>Diabetes Checking</strong></p>
 <p>Diabetes defined initially as any occurrence of:</p>
@@ -3404,19 +3409,30 @@ NA
                                 age &gt;= 40 &amp;
                                 age &lt;= 79 &amp;
                                 !(flag_hst_cvd %in% 1) &amp;
-                                flag_preg_eli %in% 1, 1, 0)) </code></pre>
+                                flag_preg_eli %in% 1, 1, 0),
+         flag_subpop_w = ifelse(gender == 2 &amp;
+                                  age &gt;= 40 &amp;
+                                  age &lt;= 79 &amp;
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_m = ifelse(gender == 1 &amp;
+                                  age &gt;= 40 &amp;
+                                  age &lt;= 79 &amp;
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_t = ifelse(age &gt;= 40 &amp;
+                                  age &lt;= 79 &amp;
+                                  !(flag_hst_cvd %in% 1), 1, 0)) </code></pre>
 <p>Saving final dataset:</p>
 <pre class="r"><code>cvd_partial %&gt;% 
   saveRDS(file = 'cvd_partial.rds')
 
 cvd_partial %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %&gt;% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %&gt;% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_partial %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %&gt;% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %&gt;% 
   write.csv(file = 'cvd_final.csv', na = &quot;&quot;)</code></pre>
 </div>
 </div>
@@ -3443,9 +3459,9 @@ cvd_partial %&gt;%
 </div>
 <div id="descriptives" class="section level3">
 <h3>Descriptives</h3>
-<pre class="r"><code> source('8 - Descriptives.R')
+<pre class="r"><code> #source('8 - Descriptives.R')
  source('8 - Descriptives_9906.R')
- source('8 - Descriptives_0716.R')</code></pre>
+ #source('8 - Descriptives_0716.R')</code></pre>
 <p>The output was included on Descriptives.xlsx file.</p>
 <p>Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.</p>
 </div>

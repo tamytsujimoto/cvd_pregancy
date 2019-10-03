@@ -110,6 +110,7 @@ cvd_desc(cat = c('gender',
            'hh_size',
            'fam_size',
            'fmpir'),
+         subpop = 'flag_subpop',
          filename = 'demo')
 
 #############
@@ -129,6 +130,7 @@ cvd_desc(cat = c('flag_cur_preg',
            'age_lst_live_brth',
            'age_inft_wght_9lb',
            'age_diab'),
+         subpop = 'flag_subpop',
          filename = 'preg')
 
 
@@ -150,6 +152,7 @@ cvd_desc(cat = c('flag_pretrm_dlvry',
                   'n_infnt_sga',
                   'age_gest_diab',
                   'n_infnt_brstfd'),
+         subpop = 'flag_subpop',
          filename = 'pregrisk')
 
 
@@ -168,6 +171,7 @@ cvd_desc(cat = c('flag_reg_prd',
            'age_frst_prd',
            'age_lst_prd',
            'age_both_ovry_remov'),
+         subpop = 'flag_subpop',
          filename = 'gyn')
 
 ###############
@@ -208,6 +212,7 @@ cvd_desc(cat = c('flag_cons_30m',
            'fglu',
            'a1c',
            'ogtt'),
+         subpop = 'flag_subpop',
          filename = 'trad')
 
 ############
@@ -223,4 +228,5 @@ cvd_desc(cat = c('mortstat',
          cont = c(
            'time_int',
            'time_exm'),
+         subpop = 'flag_subpop',
          filename = 'follow')

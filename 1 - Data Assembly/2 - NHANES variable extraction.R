@@ -212,7 +212,13 @@ mcq =
          MCQ180A,
          MCQ190,
          MCQ191,
-         MCQ195)
+         MCQ195,
+         MCQ220,
+         MCQ230A,
+         MCQ230B,
+         MCQ230C,
+         MCQ230D,
+         MCQ240E)
 
 # Oral Glucose Tolerance Test 
 ogt = 

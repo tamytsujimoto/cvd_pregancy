@@ -74,7 +74,9 @@ cvd_final =
                  flag_mdeath_diab,
                  flag_mdeath_htn,
                  cvd_outcome,
-                 cvd_outcome2), funs(as.factor(.))) %>% 
+                 cvd_outcome2,
+                 flag_hst_cancer,
+                 flag_hst_brst_cancer), funs(as.factor(.))) %>% 
   filter(cohort == 1)
 
 ##########################
@@ -327,3 +329,32 @@ cvd_desc(cat,
          subpop = 'flag_subpop_t',
          filename = 'follow_9906_t')
 
+#################
+# Breast Cancer #
+#################
+
+cat = c('flag_hst_cancer',
+        'flag_hst_brst_cancer')
+
+cont = c('age_brst_cancer')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop',
+         filename = 'cancer_9906')
+
+cvd_desc(cat = c('flag_hst_cancer',
+                 'flag_hst_brst_cancer'),
+         cont = c('age'),
+         subpop = 'flag_subpop_m',
+         filename = 'cancer_9906_m')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_w',
+         filename = 'cancer_9906_w')
+
+cvd_desc(cat,
+         cont,
+         subpop = 'flag_subpop_t',
+         filename = 'cancer_9906_t')

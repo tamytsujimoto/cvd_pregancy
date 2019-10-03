@@ -694,7 +694,12 @@ cvd_partial =
                                ifelse(flag_mdeath_diab == 1, 1, 
                                       ifelse(flag_mdeath_htn == 1, 1, 0))),
          cvd_outcome = ifelse(is.na(cvd_outcome), 0, cvd_outcome),
-         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2)
+         cvd_outcome2 = ifelse(is.na(cvd_outcome2), 0, cvd_outcome2),
+         flag_hst_cancer = ifelse(MCQ220 %in% c(7,9), NA, 
+                                  ifelse(MCQ220 == 1, 1, 0)),
+         flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
+                                       ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
+         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E)
   )
 
 
@@ -813,7 +818,18 @@ cvd_partial =
                                 age >= 40 &
                                 age <= 79 &
                                 !(flag_hst_cvd %in% 1) &
-                                flag_preg_eli %in% 1, 1, 0)) 
+                                flag_preg_eli %in% 1, 1, 0),
+         flag_subpop_w = ifelse(gender == 2 &
+                                  age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_m = ifelse(gender == 1 &
+                                  age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0),
+         flag_subpop_t = ifelse(age >= 40 &
+                                  age <= 79 &
+                                  !(flag_hst_cvd %in% 1), 1, 0)) 
 
 ```
 
@@ -826,12 +842,12 @@ cvd_partial %>%
 
 cvd_partial %>% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %>% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_partial %>% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop, eligstat:ucod_leading) %>% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %>% 
   write.csv(file = 'cvd_final.csv', na = "")
 
 ```
@@ -868,9 +884,9 @@ The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization 
 
 ```{r RunningDescriptives, warning=FALSE}
 
- source('8 - Descriptives.R')
+ #source('8 - Descriptives.R')
  source('8 - Descriptives_9906.R')
- source('8 - Descriptives_0716.R')
+ #source('8 - Descriptives_0716.R')
 
 ```
 
