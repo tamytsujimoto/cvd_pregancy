@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-10-02" />
+<meta name="date" content="2019-10-08" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">10/02/2019</h4>
+<h4 class="date">10/08/2019</h4>
 
 </div>
 
@@ -3421,18 +3421,56 @@ NA
          flag_subpop_t = ifelse(age &gt;= 40 &amp;
                                   age &lt;= 79 &amp;
                                   !(flag_hst_cvd %in% 1), 1, 0)) </code></pre>
+</div>
+<div id="pce-risk-score" class="section level3">
+<h3>PCE Risk Score</h3>
+<p>Computing PCE risk score according to the <a href="https://www.ahajournals.org/doi/pdf/10.1161/01.cir.0000437741.48606.98">2013 guideline</a></p>
+<pre class="r"><code>cvd_partial =
+  cvd_partial %&gt;% 
+  mutate_at(vars(age,
+                 cho_total,
+                 cho_hdl), list(ln = log)) %&gt;% 
+  mutate(bpxsy_avg_trt_ln = ifelse(bpxsy_avg_trt == 0, 0, log(bpxsy_avg_trt)),
+         bpxsy_avg_untrt_ln = ifelse(bpxsy_avg_untrt == 0, 0, log(bpxsy_avg_untrt)),
+         pce_score_white = (-29.799)*age_ln+
+           4.884*age_ln^2+ 
+           13.540*cho_total_ln+ 
+           (-3.114)*age_ln*cho_total_ln+
+           (-13.578)*cho_hdl_ln+
+           3.149*age_ln*cho_hdl_ln+
+           2.019*bpxsy_avg_trt_ln+
+           1.957*bpxsy_avg_untrt_ln+
+           7.574*flag_smkng_cur+
+           (-1.665)*age_ln*flag_smkng_cur+
+           0.661*flag_diab-(-29.18),
+         pce_score_black = 17.114*age_ln+
+           0.940*cho_total_ln+ 
+           (-18.920)*cho_hdl_ln+
+           4.475*age_ln*cho_hdl_ln+
+           29.291*bpxsy_avg_trt_ln+
+           (-6.432)*age_ln*bpxsy_avg_trt_ln+
+           27.820*bpxsy_avg_untrt_ln+
+           (-6.087)*age_ln*bpxsy_avg_untrt_ln+
+           0.691*flag_smkng_cur+
+           0.874*flag_diab-86.61,
+         pce_risk_white = (1-0.9665^exp(pce_score_white)),
+         pce_risk_black = (1-0.9533^exp(pce_score_black)),
+         pce_risk = ifelse(race == 4, pce_risk_black, pce_risk_white),
+         pce_risk_cat = ifelse(pce_risk &lt; 0.05, 1, 
+                               ifelse(pce_risk &lt; 0.075, 2, 
+                                      ifelse(pce_risk &lt; 0.2, 3, 4))))</code></pre>
 <p>Saving final dataset:</p>
 <pre class="r"><code>cvd_partial %&gt;% 
   saveRDS(file = 'cvd_partial.rds')
 
 cvd_partial %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %&gt;% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %&gt;% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_partial %&gt;% 
   select(SEQN, cycle, SDMVPSU, SDMVSTRA,
-         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading) %&gt;% 
+         bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %&gt;% 
   write.csv(file = 'cvd_final.csv', na = &quot;&quot;)</code></pre>
 </div>
 </div>
@@ -3459,7 +3497,7 @@ cvd_partial %&gt;%
 </div>
 <div id="descriptives" class="section level3">
 <h3>Descriptives</h3>
-<pre class="r"><code> #source('8 - Descriptives.R')
+<pre class="r"><code> source('8 - Descriptives.R')
  source('8 - Descriptives_9906.R')
  #source('8 - Descriptives_0716.R')</code></pre>
 <p>The output was included on Descriptives.xlsx file.</p>
