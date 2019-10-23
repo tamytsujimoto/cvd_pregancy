@@ -28,6 +28,7 @@ demo =
          cycle,
          SDMVPSU,
          SDMVSTRA,
+         RIDEXMON,
          RIAGENDR,
          RIDRETH1,
          RIDRETH2,

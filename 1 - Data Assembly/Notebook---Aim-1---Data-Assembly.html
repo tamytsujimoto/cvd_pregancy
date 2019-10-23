@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-10-08" />
+<meta name="date" content="2019-10-23" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">10/08/2019</h4>
+<h4 class="date">10/23/2019</h4>
 
 </div>
 
@@ -1767,21 +1767,21 @@ nhanes_load_data(file = &quot;RHQ&quot;,
                  destination = &quot;nhanes_data&quot;)
 
 # Cholesterol 
-nhanes_load_data(file = c('Lab13', 'l13_B', 'l13_C', rep('TCHOL', 5)), 
+nhanes_load_data(file = c(&#39;Lab13&#39;, &#39;l13_B&#39;, &#39;l13_C&#39;, rep(&#39;TCHOL&#39;, 5)), 
                  year = yr, 
                  destination = &quot;nhanes_data&quot;)
 
-nhanes_load_data(file = 'HDL', 
+nhanes_load_data(file = &#39;HDL&#39;, 
                  year = yr[-c(1:3)], 
                  destination = &quot;nhanes_data&quot;)
 
 # Cotinine 
-nhanes_load_data(file = c('LAB06', 'L06_B', 'L06COT_C', 'COT_D', 'COTNAL_E', 'COTNAL_F', 'COTNAL_G', 'COT_H'), 
+nhanes_load_data(file = c(&#39;LAB06&#39;, &#39;L06_B&#39;, &#39;L06COT_C&#39;, &#39;COT_D&#39;, &#39;COTNAL_E&#39;, &#39;COTNAL_F&#39;, &#39;COTNAL_G&#39;, &#39;COT_H&#39;), 
                  year = yr, 
                  destination = &quot;nhanes_data&quot;)
 
 # Glycohemoglobin 
-nhanes_load_data(file = c('LAB10', 'L10_B', 'L10_C', rep('GHB', 5)), 
+nhanes_load_data(file = c(&#39;LAB10&#39;, &#39;L10_B&#39;, &#39;L10_C&#39;, rep(&#39;GHB&#39;, 5)), 
                  year = yr, 
                  destination = &quot;nhanes_data&quot;)
 
@@ -1791,38 +1791,38 @@ nhanes_load_data(file = &quot;MCQ&quot;,
                  destination = &quot;../3 - Databases/nhanes_data&quot;)
 
 # Oral Glucose Tolerance Test 
-nhanes_load_data(file = 'OGTT', 
+nhanes_load_data(file = &#39;OGTT&#39;, 
                  year = yr[-c(1:3)], 
                  destination = &quot;../3 - Databases/nhanes_data&quot;)
 
 # Plasma Fasting Glucose
-nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)), 
+nhanes_load_data(file = c(&#39;LAB10AM&#39;, &#39;L10AM_B&#39;, &#39;L10AM_C&#39;, rep(&#39;GLU&#39;, 5)), 
                  year = yr, 
                  destination = &quot;../3 - Databases/nhanes_data&quot;)</code></pre>
 </div>
 <div id="variable-extraction" class="section level3">
 <h3>Variable extraction</h3>
 <p>Stack each variable and select variables of interest as described in Database and variable inventory file.</p>
-<pre class="r"><code>source('2 - NHANES variable extraction.R')
+<pre class="r"><code>source(&#39;2 - NHANES variable extraction.R&#39;)
 
 ############
 # CHECKING #
 ############
 
-bind_rows('DEMO - Demographic and Weights' = demo, 
-          'BPX - Blood Pressure' = bpx, 
-          'BPQ - Blood Pressure &amp; Cholesterol' = bpq, 
-          'SMQ - Smoking' = smq,
-          'DIQ - Diabetes' = diq,
-          'RHQ - Reproductive Health' = rhq, 
-          'L13 + CHOL - Cholesterol' = chol,
-          'MCQ - Medical Conditions' = mcq,
-          'HDL' = hdl,
-          'Cotinine' = cot, 
-          'Glycohemoglobin' = glyc,
-          'Glucose Tolerance Test' = ogt,
-          'Fasting Glucose' = glu,
-          .id = 'Database') %&gt;% 
+bind_rows(&#39;DEMO - Demographic and Weights&#39; = demo, 
+          &#39;BPX - Blood Pressure&#39; = bpx, 
+          &#39;BPQ - Blood Pressure &amp; Cholesterol&#39; = bpq, 
+          &#39;SMQ - Smoking&#39; = smq,
+          &#39;DIQ - Diabetes&#39; = diq,
+          &#39;RHQ - Reproductive Health&#39; = rhq, 
+          &#39;L13 + CHOL - Cholesterol&#39; = chol,
+          &#39;MCQ - Medical Conditions&#39; = mcq,
+          &#39;HDL&#39; = hdl,
+          &#39;Cotinine&#39; = cot, 
+          &#39;Glycohemoglobin&#39; = glyc,
+          &#39;Glucose Tolerance Test&#39; = ogt,
+          &#39;Fasting Glucose&#39; = glu,
+          .id = &#39;Database&#39;) %&gt;% 
   select(Database, cycle) %&gt;% 
   group_by(Database, cycle) %&gt;% 
   summarise(n = n()) %&gt;% 
@@ -2290,7 +2290,7 @@ NA
 <div id="downloading-and-reading-mortality-data" class="section level3">
 <h3>Downloading and reading mortality data</h3>
 <p>The mortality files were downloaded from <a href="ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/">here</a>. The codes below are based on the R code provided by in <a href="https://www.cdc.gov/nchs/data-linkage/mortality-public.htm">Linked mortality files website</a>.</p>
-<pre class="r"><code>source('3 - Download Mortality data.R')
+<pre class="r"><code>source(&#39;3 - Download Mortality data.R&#39;)
 
 ############
 # CHECKING #
@@ -2299,7 +2299,7 @@ NA
 mortality %&gt;% 
   group_by(cycle) %&gt;% 
   summarise(n = n()) %&gt;% 
-  bind_rows(data.frame(cycle = 'Total', n = dim(mortality)[1], stringsAsFactors = FALSE)) %&gt;% 
+  bind_rows(data.frame(cycle = &#39;Total&#39;, n = dim(mortality)[1], stringsAsFactors = FALSE)) %&gt;% 
   kable(format.args = list(big.mark = &quot;,&quot;)) %&gt;% 
   kable_styling()</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -2394,22 +2394,22 @@ Total
 <p>PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.</p>
 <pre class="r"><code>nhanes = 
   demo %&gt;% 
-  left_join(bpq, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(bpx, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(chol, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(cot, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(diq, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(glu, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(glyc, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(hdl, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(mcq, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(ogt, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(rhq, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(smq, by = c('SEQN', 'cycle')) %&gt;% 
-  left_join(mortality, by = c('SEQN', 'cycle'))
+  left_join(bpq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(bpx, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(chol, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(cot, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(diq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(glu, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(glyc, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(hdl, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(mcq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(ogt, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(rhq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(smq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
+  left_join(mortality, by = c(&#39;SEQN&#39;, &#39;cycle&#39;))
   
-saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
-write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)</code></pre>
+saveRDS(nhanes, file = &#39;nhanes_mort_complete.rds&#39;)
+write.csv(nhanes, file = &#39;nhanes_mort_complete.csv&#39;, row.names = FALSE)</code></pre>
 </div>
 </div>
 <div id="data-checks" class="section level2">
@@ -2550,11 +2550,11 @@ bpx_check %&gt;%
 <div id="current-pregnancy" class="section level3">
 <h3>Current Pregnancy</h3>
 <pre class="r"><code>nhanes %&gt;% 
-  mutate_at(vars(RHQ140, RHQ141, RHD143), funs(car::Recode(RHD143, &quot;1 = '1. Yes'; 2 = '2. No'; 7 = 'Refused'; 9 = '9. Do not know'&quot;))) %&gt;% 
-  mutate(RIDEXPRG = car::Recode(RIDEXPRG, &quot;1 = '1. Yes'; 2 = '2. No'; 3 = '3. Do not know'&quot;)) %&gt;% 
+  mutate_at(vars(RHQ140, RHQ141, RHD143), funs(car::Recode(RHD143, &quot;1 = &#39;1. Yes&#39;; 2 = &#39;2. No&#39;; 7 = &#39;Refused&#39;; 9 = &#39;9. Do not know&#39;&quot;))) %&gt;% 
+  mutate(RIDEXPRG = car::Recode(RIDEXPRG, &quot;1 = &#39;1. Yes&#39;; 2 = &#39;2. No&#39;; 3 = &#39;3. Do not know&#39;&quot;)) %&gt;% 
   group_by(RHQ140, RHQ141, RHD143, RIDEXPRG) %&gt;% 
   summarise(n = n()) %&gt;% 
-  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep(&#39;c&#39;, 3), digits = 2) %&gt;% 
   kable_styling()</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -3131,8 +3131,8 @@ weights %&gt;%
          bpxsy_avg_trt = ifelse(flag_htn_trt == 1, bpxsy_avg, 0),
          bpxsy_avg_untrt = ifelse(flag_htn_trt == 0, bpxsy_avg, 0),
          cho_total = LBXTC,
-         cho_hdl = ifelse(cycle %in% c('1999-2000', '2001-2002'), LBDHDL,
-                          ifelse(cycle %in% c('2003-2004'), LBXHDD, LBDHDD)),
+         cho_hdl = ifelse(cycle %in% c(&#39;1999-2000&#39;, &#39;2001-2002&#39;), LBDHDL,
+                          ifelse(cycle %in% c(&#39;2003-2004&#39;), LBXHDD, LBDHDD)),
          SMQ020 = ifelse(SMQ020 %in% c(7,9), NA, SMQ020),
          SMD030 = ifelse(SMD030 %in% c(777,999), NA, SMD030),
          SMQ040 = ifelse(SMQ040 %in% c(7,9), NA, SMQ040),
@@ -3252,7 +3252,7 @@ weights %&gt;%
   summarise(n = n()) %&gt;%
   ungroup %&gt;%
   mutate(freq = n/sum(n)*100) %&gt;% 
-  kable(format.args = list(big.mark = &quot;,&quot;), align=rep('c', 3), digits = 2) %&gt;% 
+  kable(format.args = list(big.mark = &quot;,&quot;), align=rep(&#39;c&#39;, 3), digits = 2) %&gt;% 
   kable_styling()</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -3382,7 +3382,7 @@ NA
                                      flag_diab_trt_ins %in% 1 |
                                      flag_diab_a1c %in% 1, 1, 0)),
          WTMEC = ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/8*WTMEC4YR, 1/8*WTMEC2YR),
-         cohort = ifelse(cycle %in% c('1999-2000', '2001-2002', '2003-2004', '2005-2006'), 1, 2),
+         cohort = ifelse(cycle %in% c(&#39;1999-2000&#39;, &#39;2001-2002&#39;, &#39;2003-2004&#39;, &#39;2005-2006&#39;), 1, 2),
          WTMEC_C1 = ifelse(cohort == 2, NA, 
                            ifelse(cycle %in% c(&quot;1999-2000&quot;, &quot;2001-2002&quot;), 2/4*WTMEC4YR, 1/4*WTMEC2YR)),
          WTMEC_C2 = ifelse(cohort == 1, NA, 1/4*WTMEC2YR)) </code></pre>
@@ -3432,7 +3432,8 @@ NA
                  cho_hdl), list(ln = log)) %&gt;% 
   mutate(bpxsy_avg_trt_ln = ifelse(bpxsy_avg_trt == 0, 0, log(bpxsy_avg_trt)),
          bpxsy_avg_untrt_ln = ifelse(bpxsy_avg_untrt == 0, 0, log(bpxsy_avg_untrt)),
-         pce_score_white = (-29.799)*age_ln+
+         pce_score_w_white = 
+           (-29.799)*age_ln+
            4.884*age_ln^2+ 
            13.540*cho_total_ln+ 
            (-3.114)*age_ln*cho_total_ln+
@@ -3443,7 +3444,8 @@ NA
            7.574*flag_smkng_cur+
            (-1.665)*age_ln*flag_smkng_cur+
            0.661*flag_diab-(-29.18),
-         pce_score_black = 17.114*age_ln+
+         pce_score_w_black = 
+           17.114*age_ln+
            0.940*cho_total_ln+ 
            (-18.920)*cho_hdl_ln+
            4.475*age_ln*cho_hdl_ln+
@@ -3453,25 +3455,48 @@ NA
            (-6.087)*age_ln*bpxsy_avg_untrt_ln+
            0.691*flag_smkng_cur+
            0.874*flag_diab-86.61,
-         pce_risk_white = (1-0.9665^exp(pce_score_white)),
-         pce_risk_black = (1-0.9533^exp(pce_score_black)),
+         pce_score_m_white = 
+           12.344*age_ln+
+           11.853*cho_total_ln+
+           (-2.664)*age_ln*cho_total_ln+
+           (-7.990)*cho_hdl_ln+
+           1.769*age_ln*cho_hdl_ln+
+           1.797*bpxsy_avg_trt_ln+
+           1.764*bpxsy_avg_untrt_ln+
+           7.837*flag_smkng_cur+
+           (-1.795)*age_ln*flag_smkng_cur+
+           0.658*flag_diab-(61.18),
+         pce_score_m_black = 
+           2.469*age_ln+
+           0.302*cho_total_ln+
+           (-0.307)*cho_hdl_ln+
+           1.916*bpxsy_avg_trt_ln+
+           1.809*bpxsy_avg_untrt_ln+
+           0.549*flag_smkng_cur+
+           0.645*flag_diab-(19.54),
+         pce_risk_white = ifelse(gender == 1, 
+                                 (1-0.9665^exp(pce_score_m_white)), 
+                                 (1-0.9144^exp(pce_score_w_white))),
+         pce_risk_black = ifelse(gender == 1,
+                                 (1-0.9533^exp(pce_score_m_black)),
+                                 (1-0.8954^exp(pce_score_w_black))),
          pce_risk = ifelse(race == 4, pce_risk_black, pce_risk_white),
          pce_risk_cat = ifelse(pce_risk &lt; 0.05, 1, 
                                ifelse(pce_risk &lt; 0.075, 2, 
                                       ifelse(pce_risk &lt; 0.2, 3, 4))))</code></pre>
 <p>Saving final dataset:</p>
 <pre class="r"><code>cvd_partial %&gt;% 
-  saveRDS(file = 'cvd_partial.rds')
+  saveRDS(file = &#39;cvd_partial.rds&#39;)
 
 cvd_partial %&gt;% 
-  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA, RIDEXMON,
          bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %&gt;% 
-  saveRDS(file = 'cvd_final.rds')
+  saveRDS(file = &#39;cvd_final.rds&#39;)
 
 cvd_partial %&gt;% 
-  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA, RIDEXMON,
          bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %&gt;% 
-  write.csv(file = 'cvd_final.csv', na = &quot;&quot;)</code></pre>
+  write.csv(file = &#39;cvd_final.csv&#39;, na = &quot;&quot;)</code></pre>
 </div>
 </div>
 <div id="data-description" class="section level2">
@@ -3497,9 +3522,9 @@ cvd_partial %&gt;%
 </div>
 <div id="descriptives" class="section level3">
 <h3>Descriptives</h3>
-<pre class="r"><code> source('8 - Descriptives.R')
- source('8 - Descriptives_9906.R')
- #source('8 - Descriptives_0716.R')</code></pre>
+<pre class="r"><code> source(&#39;8 - Descriptives.R&#39;)
+ source(&#39;8 - Descriptives_9906.R&#39;)
+ #source(&#39;8 - Descriptives_0716.R&#39;)</code></pre>
 <p>The output was included on Descriptives.xlsx file.</p>
 <p>Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.</p>
 </div>

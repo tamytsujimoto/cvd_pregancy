@@ -327,7 +327,8 @@ cvd_partial =
                  cho_hdl), list(ln = log)) %>% 
   mutate(bpxsy_avg_trt_ln = ifelse(bpxsy_avg_trt == 0, 0, log(bpxsy_avg_trt)),
          bpxsy_avg_untrt_ln = ifelse(bpxsy_avg_untrt == 0, 0, log(bpxsy_avg_untrt)),
-         pce_score_white = (-29.799)*age_ln+
+         pce_score_w_white = 
+           (-29.799)*age_ln+
            4.884*age_ln^2+ 
            13.540*cho_total_ln+ 
            (-3.114)*age_ln*cho_total_ln+
@@ -338,7 +339,8 @@ cvd_partial =
            7.574*flag_smkng_cur+
            (-1.665)*age_ln*flag_smkng_cur+
            0.661*flag_diab-(-29.18),
-         pce_score_black = 17.114*age_ln+
+         pce_score_w_black = 
+           17.114*age_ln+
            0.940*cho_total_ln+ 
            (-18.920)*cho_hdl_ln+
            4.475*age_ln*cho_hdl_ln+
@@ -348,8 +350,31 @@ cvd_partial =
            (-6.087)*age_ln*bpxsy_avg_untrt_ln+
            0.691*flag_smkng_cur+
            0.874*flag_diab-86.61,
-         pce_risk_white = (1-0.9665^exp(pce_score_white)),
-         pce_risk_black = (1-0.9533^exp(pce_score_black)),
+         pce_score_m_white = 
+           12.344*age_ln+
+           11.853*cho_total_ln+
+           (-2.664)*age_ln*cho_total_ln+
+           (-7.990)*cho_hdl_ln+
+           1.769*age_ln*cho_hdl_ln+
+           1.797*bpxsy_avg_trt_ln+
+           1.764*bpxsy_avg_untrt_ln+
+           7.837*flag_smkng_cur+
+           (-1.795)*age_ln*flag_smkng_cur+
+           0.658*flag_diab-(61.18),
+         pce_score_m_black = 
+           2.469*age_ln+
+           0.302*cho_total_ln+
+           (-0.307)*cho_hdl_ln+
+           1.916*bpxsy_avg_trt_ln+
+           1.809*bpxsy_avg_untrt_ln+
+           0.549*flag_smkng_cur+
+           0.645*flag_diab-(19.54),
+         pce_risk_white = ifelse(gender == 1, 
+                                 (1-0.9665^exp(pce_score_m_white)), 
+                                 (1-0.9144^exp(pce_score_w_white))),
+         pce_risk_black = ifelse(gender == 1,
+                                 (1-0.9533^exp(pce_score_m_black)),
+                                 (1-0.8954^exp(pce_score_w_black))),
          pce_risk = ifelse(race == 4, pce_risk_black, pce_risk_white),
          pce_risk_cat = ifelse(pce_risk < 0.05, 1, 
                                ifelse(pce_risk < 0.075, 2, 
@@ -360,12 +385,12 @@ cvd_partial %>%
   saveRDS(file = 'cvd_partial.rds')
 
 cvd_partial %>% 
-  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,RIDEXMON,
          bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %>% 
   saveRDS(file = 'cvd_final.rds')
 
 cvd_partial %>% 
-  select(SEQN, cycle, SDMVPSU, SDMVSTRA,
+  select(SEQN, cycle, SDMVPSU, SDMVSTRA,RIDEXMON,
          bpxsy_avg:flag_subpop_t, eligstat:ucod_leading, pce_risk, pce_risk_cat) %>% 
   write.csv(file = 'cvd_final.csv', na = "")
 
