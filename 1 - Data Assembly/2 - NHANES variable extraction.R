@@ -238,5 +238,28 @@ glu =
          WTSAF4YR,
          LBXGLU)
 
+# Body measure
+bmx = 
+  stack_nhanes_data(pattern = 'BMX') %>% 
+  select(SEQN,
+         cycle,
+         BMXBMI,
+         BMXWT,
+         BMXHT)
+
+# MET score
+paq = 
+  stack_nhanes_data(pattern = 'PAQIAF') %>% 
+  select(SEQN,
+         cycle,
+         PADMETS)
+
+# C-reactive protein
+crp = 
+  stack_nhanes_data(pattern = paste(c('LAB11', 'L11', 'CRP'), collapse = "|")) %>% 
+  select(SEQN,
+         cycle,
+         LBXCRP)
+
 
 

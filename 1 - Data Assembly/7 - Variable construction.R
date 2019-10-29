@@ -243,7 +243,12 @@ cvd_partial =
                                   ifelse(MCQ220 == 1, 1, 0)),
          flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
                                        ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
-         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E)
+         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E),
+         crp = LBXCRP,
+         bmi = BMXBMI,
+         bd_wt_kg = BMXWT,
+         bd_ht_cm = BMXHT,
+         met = PADMETS
   )
 
 # DIABETES CHECKING #

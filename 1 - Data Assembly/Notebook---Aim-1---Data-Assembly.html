@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-10-23" />
+<meta name="date" content="2019-10-28" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">10/23/2019</h4>
+<h4 class="date">10/28/2019</h4>
 
 </div>
 
@@ -1730,75 +1730,7 @@ div.tocify {
 <div id="downloading-nhanes-data" class="section level3">
 <h3>Downloading NHANES data</h3>
 <p>Using the <a href="https://cran.r-project.org/web/packages/RNHANES/vignettes/introduction.html">R package RNHANES</a> to download the datasets.</p>
-<pre class="r"><code>library(RNHANES)
-library(tidyverse)
-
-# Years considered in the analysis (1999-2014)
-yr = paste(seq(1999, 2013, by = 2), seq(2000, 2014, by = 2), sep = &quot;-&quot;)
-
-# Demographic Variables &amp; Sample Weights
-nhanes_load_data(file = &quot;DEMO&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Blood Pressure
-nhanes_load_data(file = &quot;BPX&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Blood Pressure &amp; Cholesterol
-nhanes_load_data(file = &quot;BPQ&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Smoking - Cigarette/Tobacco Use - Adult 
-nhanes_load_data(file = &quot;SMQ&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Diabetes
-nhanes_load_data(file = &quot;DIQ&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Reproductive Health 
-nhanes_load_data(file = &quot;RHQ&quot;, 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Cholesterol 
-nhanes_load_data(file = c(&#39;Lab13&#39;, &#39;l13_B&#39;, &#39;l13_C&#39;, rep(&#39;TCHOL&#39;, 5)), 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-nhanes_load_data(file = &#39;HDL&#39;, 
-                 year = yr[-c(1:3)], 
-                 destination = &quot;nhanes_data&quot;)
-
-# Cotinine 
-nhanes_load_data(file = c(&#39;LAB06&#39;, &#39;L06_B&#39;, &#39;L06COT_C&#39;, &#39;COT_D&#39;, &#39;COTNAL_E&#39;, &#39;COTNAL_F&#39;, &#39;COTNAL_G&#39;, &#39;COT_H&#39;), 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Glycohemoglobin 
-nhanes_load_data(file = c(&#39;LAB10&#39;, &#39;L10_B&#39;, &#39;L10_C&#39;, rep(&#39;GHB&#39;, 5)), 
-                 year = yr, 
-                 destination = &quot;nhanes_data&quot;)
-
-# Medical Conditions 
-nhanes_load_data(file = &quot;MCQ&quot;, 
-                 year = yr, 
-                 destination = &quot;../3 - Databases/nhanes_data&quot;)
-
-# Oral Glucose Tolerance Test 
-nhanes_load_data(file = &#39;OGTT&#39;, 
-                 year = yr[-c(1:3)], 
-                 destination = &quot;../3 - Databases/nhanes_data&quot;)
-
-# Plasma Fasting Glucose
-nhanes_load_data(file = c(&#39;LAB10AM&#39;, &#39;L10AM_B&#39;, &#39;L10AM_C&#39;, rep(&#39;GLU&#39;, 5)), 
-                 year = yr, 
-                 destination = &quot;../3 - Databases/nhanes_data&quot;)</code></pre>
+<pre class="r"><code>source(&#39;1 - Download NHANES data.R&#39;)</code></pre>
 </div>
 <div id="variable-extraction" class="section level3">
 <h3>Variable extraction</h3>
@@ -1822,6 +1754,9 @@ bind_rows(&#39;DEMO - Demographic and Weights&#39; = demo,
           &#39;Glycohemoglobin&#39; = glyc,
           &#39;Glucose Tolerance Test&#39; = ogt,
           &#39;Fasting Glucose&#39; = glu,
+          &#39;Body Measure&#39; = bmx,
+          &#39;MET Score&#39; = paq,
+          &#39;C-reactive protein&#39; = crp,
           .id = &#39;Database&#39;) %&gt;% 
   select(Database, cycle) %&gt;% 
   group_by(Database, cycle) %&gt;% 
@@ -1898,6 +1833,38 @@ DEMO - Demographic and Weights
 </td>
 <td style="text-align:right;">
 82,091
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Body Measure
+</td>
+<td style="text-align:right;">
+9,282
+</td>
+<td style="text-align:right;">
+10,477
+</td>
+<td style="text-align:right;">
+9,643
+</td>
+<td style="text-align:right;">
+9,950
+</td>
+<td style="text-align:right;">
+9,762
+</td>
+<td style="text-align:right;">
+10,253
+</td>
+<td style="text-align:right;">
+9,338
+</td>
+<td style="text-align:right;">
+9,813
+</td>
+<td style="text-align:right;">
+78,518
 </td>
 </tr>
 <tr>
@@ -2094,6 +2061,38 @@ Glycohemoglobin
 </tr>
 <tr>
 <td style="text-align:left;">
+C-reactive protein
+</td>
+<td style="text-align:right;">
+8,344
+</td>
+<td style="text-align:right;">
+9,262
+</td>
+<td style="text-align:right;">
+9,179
+</td>
+<td style="text-align:right;">
+9,440
+</td>
+<td style="text-align:right;">
+8,712
+</td>
+<td style="text-align:right;">
+9,211
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+54,148
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 SMQ - Smoking
 </td>
 <td style="text-align:right;">
@@ -2154,6 +2153,38 @@ BPQ - Blood Pressure &amp; Cholesterol
 </td>
 <td style="text-align:right;">
 51,104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MET Score
+</td>
+<td style="text-align:right;">
+9,266
+</td>
+<td style="text-align:right;">
+13,439
+</td>
+<td style="text-align:right;">
+12,867
+</td>
+<td style="text-align:right;">
+14,212
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+49,784
 </td>
 </tr>
 <tr>
@@ -2392,24 +2423,7 @@ Total
 <div id="merging-datasets" class="section level3">
 <h3>Merging datasets</h3>
 <p>PS: Using also cycle as key (even though not needed) to avoind duplicating this variable across datasets.</p>
-<pre class="r"><code>nhanes = 
-  demo %&gt;% 
-  left_join(bpq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(bpx, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(chol, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(cot, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(diq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(glu, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(glyc, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(hdl, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(mcq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(ogt, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(rhq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(smq, by = c(&#39;SEQN&#39;, &#39;cycle&#39;)) %&gt;% 
-  left_join(mortality, by = c(&#39;SEQN&#39;, &#39;cycle&#39;))
-  
-saveRDS(nhanes, file = &#39;nhanes_mort_complete.rds&#39;)
-write.csv(nhanes, file = &#39;nhanes_mort_complete.csv&#39;, row.names = FALSE)</code></pre>
+<pre class="r"><code>source(&#39;4 - Merging Datasets.R&#39;)</code></pre>
 </div>
 </div>
 <div id="data-checks" class="section level2">
@@ -2529,23 +2543,23 @@ fivenum(bpx_check$diff1)</code></pre>
 bpx_check %&gt;% 
   filter(diff2 &gt; 0) %&gt;% 
   glimpse</code></pre>
-<pre><code>## Observations: 31
+<pre><code>## Observations: 68
 ## Variables: 14
 ## $ BPXDI1       &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ BPXDI2       &lt;int&gt; 20, 20, 40, 62, 20, 38, NA, NA, NA, 50, 38, NA, 62,…
-## $ BPXDI3       &lt;int&gt; 30, 34, 30, 54, 38, 18, 30, 12, 58, 52, 36, 40, NA,…
-## $ BPXDI4       &lt;int&gt; NA, NA, NA, NA, NA, NA, 50, 20, 66, NA, NA, 44, 60,…
-## $ BPXDAR       &lt;int&gt; 25, 27, 35, 58, 29, 28, 40, 16, 62, 51, 37, 42, 61,…
-## $ BPXDI1_flag  &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, …
-## $ BPXDI2_flag  &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, …
-## $ BPXDI3_flag  &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, …
-## $ BPXDI4_flag  &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, …
-## $ bpx_flag_tot &lt;dbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, …
-## $ bpx_avg1     &lt;dbl&gt; 25, 27, 35, 58, 29, 28, 40, 16, 62, 51, 37, 42, 61,…
-## $ bpx_avg2     &lt;dbl&gt; 30, 34, 30, 54, 38, 18, 50, 20, 66, 52, 36, 44, 60,…
-## $ diff1        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1600, 270…
-## $ diff2        &lt;dbl&gt; 25, 49, 25, 16, 81, 100, 100, 16, 16, 1, 1, 4, 1, 4…</code></pre>
-<p>31 observations out of 22270 (0.14 %) not matching the rule from CDC.</p>
+## $ BPXDI2       &lt;int&gt; 20, 20, 20, 20, 40, 62, 20, 20, 20, 20, 38, NA, NA,…
+## $ BPXDI3       &lt;int&gt; 30, 34, 34, 34, 30, 54, 38, 38, 38, 38, 18, 30, 12,…
+## $ BPXDI4       &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 50, 20,…
+## $ BPXDAR       &lt;int&gt; 25, 27, 27, 27, 35, 58, 29, 29, 29, 29, 28, 40, 16,…
+## $ BPXDI1_flag  &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ BPXDI2_flag  &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, …
+## $ BPXDI3_flag  &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ BPXDI4_flag  &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, …
+## $ bpx_flag_tot &lt;dbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+## $ bpx_avg1     &lt;dbl&gt; 25, 27, 27, 27, 35, 58, 29, 29, 29, 29, 28, 40, 16,…
+## $ bpx_avg2     &lt;dbl&gt; 30, 34, 34, 34, 30, 54, 38, 38, 38, 38, 18, 50, 20,…
+## $ diff1        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ diff2        &lt;dbl&gt; 25, 49, 49, 49, 25, 16, 81, 81, 81, 81, 100, 100, 1…</code></pre>
+<p>68 observations out of 42602 (0.16 %) not matching the rule from CDC.</p>
 </div>
 <div id="current-pregnancy" class="section level3">
 <h3>Current Pregnancy</h3>
@@ -2595,7 +2609,7 @@ n
 <li>Yes
 </td>
 <td style="text-align:center;">
-742
+1,085
 </td>
 </tr>
 <tr>
@@ -2635,89 +2649,6 @@ n
 <td style="text-align:center;">
 <ol start="3" style="list-style-type: decimal">
 <li>Do not know
-</td>
-<td style="text-align:center;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol style="list-style-type: decimal">
-<li>Yes
-</td>
-<td style="text-align:center;">
-46
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-4,180
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="3" style="list-style-type: decimal">
-<li>Do not know
-</td>
-<td style="text-align:center;">
-77
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-<ol start="2" style="list-style-type: decimal">
-<li>No
-</td>
-<td style="text-align:center;">
-NA
 </td>
 <td style="text-align:center;">
 4
@@ -2725,6 +2656,89 @@ NA
 </tr>
 <tr>
 <td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol style="list-style-type: decimal">
+<li>Yes
+</td>
+<td style="text-align:center;">
+58
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+5,592
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="3" style="list-style-type: decimal">
+<li>Do not know
+</td>
+<td style="text-align:center;">
+115
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+<ol start="2" style="list-style-type: decimal">
+<li>No
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
 <ol start="9" style="list-style-type: decimal">
 <li>Do not know
 </td>
@@ -2741,7 +2755,7 @@ NA
 <li>Yes
 </td>
 <td style="text-align:center;">
-12
+14
 </td>
 </tr>
 <tr>
@@ -2762,7 +2776,7 @@ NA
 <li>No
 </td>
 <td style="text-align:center;">
-19
+20
 </td>
 </tr>
 <tr>
@@ -2783,7 +2797,7 @@ NA
 <li>Do not know
 </td>
 <td style="text-align:center;">
-49
+70
 </td>
 </tr>
 <tr>
@@ -2801,7 +2815,7 @@ NA
 <li>Yes
 </td>
 <td style="text-align:center;">
-797
+1,118
 </td>
 </tr>
 <tr>
@@ -2819,7 +2833,7 @@ NA
 <li>No
 </td>
 <td style="text-align:center;">
-9,872
+18,882
 </td>
 </tr>
 <tr>
@@ -2837,7 +2851,7 @@ NA
 <li>Do not know
 </td>
 <td style="text-align:center;">
-1,344
+2,036
 </td>
 </tr>
 <tr>
@@ -2854,7 +2868,7 @@ NA
 NA
 </td>
 <td style="text-align:center;">
-64,945
+84,102
 </td>
 </tr>
 </tbody>
@@ -2948,12 +2962,12 @@ weights %&gt;%
   select(WTINT, WTMEC, WTSAF) %&gt;% 
   summarise_all(sum, na.rm = TRUE)</code></pre>
 <pre><code>##       WTINT     WTMEC     WTSAF
-## 1 294002356 294002356 245556266</code></pre>
+## 1 425450979 426654550 379581092</code></pre>
 <pre class="r"><code>weights %&gt;% 
   select(WTINT, WTMEC, WTSAF, WTSOG2YR) %&gt;% 
   summarise_all(funs(sum(!is.na(.))))</code></pre>
-<pre><code>##   WTINT WTMEC WTSAF WTSOG2YR
-## 1 82091 82091 27105    14389</code></pre>
+<pre><code>##    WTINT  WTMEC WTSAF WTSOG2YR
+## 1 113103 113103 41538    17949</code></pre>
 </div>
 <div id="variable-construction" class="section level3">
 <h3>Variable construction</h3>
@@ -3198,7 +3212,12 @@ weights %&gt;%
                                   ifelse(MCQ220 == 1, 1, 0)),
          flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
                                        ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
-         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E)
+         age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E),
+         crp = LBXCRP,
+         bmi = BMXBMI,
+         bd_wt_kg = BMXWT,
+         bd_ht_cm = BMXHT,
+         met = PADMETS
   )</code></pre>
 <p><strong>Diabetes Checking</strong></p>
 <p>Diabetes defined initially as any occurrence of:</p>
@@ -3286,10 +3305,10 @@ freq
 0
 </td>
 <td style="text-align:center;">
-71,304
+101,422
 </td>
 <td style="text-align:center;">
-86.86
+89.67
 </td>
 </tr>
 <tr>
@@ -3303,10 +3322,10 @@ freq
 0
 </td>
 <td style="text-align:center;">
-336
+361
 </td>
 <td style="text-align:center;">
-0.41
+0.32
 </td>
 </tr>
 <tr>
@@ -3320,10 +3339,10 @@ freq
 0
 </td>
 <td style="text-align:center;">
-465
+538
 </td>
 <td style="text-align:center;">
-0.57
+0.48
 </td>
 </tr>
 <tr>
@@ -3337,10 +3356,10 @@ freq
 1
 </td>
 <td style="text-align:center;">
-6,224
+7,020
 </td>
 <td style="text-align:center;">
-7.58
+6.21
 </td>
 </tr>
 <tr>
@@ -3357,7 +3376,7 @@ NA
 3,762
 </td>
 <td style="text-align:center;">
-4.58
+3.33
 </td>
 </tr>
 </tbody>

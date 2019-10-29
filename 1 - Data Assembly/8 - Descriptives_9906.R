@@ -76,7 +76,8 @@ cvd_final =
                  cvd_outcome,
                  cvd_outcome2,
                  flag_hst_cancer,
-                 flag_hst_brst_cancer), funs(as.factor(.))) %>% 
+                 flag_hst_brst_cancer,
+                 pce_risk_cat), funs(as.factor(.))) %>% 
   filter(cohort == 1)
 
 ##########################
@@ -358,3 +359,27 @@ cvd_desc(cat,
          cont,
          subpop = 'flag_subpop_t',
          filename = 'cancer_9906_t')
+
+##################
+# PCE Risk Score #
+##################
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop',
+         filename = 'pce_9906')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_m',
+         filename = 'pce_9906_m')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_w',
+         filename = 'pce_9906_w')
+
+cvd_desc(cat = c('pce_risk_cat'),
+         cont = c('pce_risk'),
+         subpop = 'flag_subpop_t',
+         filename = 'pce_9906_t')

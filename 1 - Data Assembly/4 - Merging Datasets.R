@@ -1,4 +1,3 @@
-library(tidyverse)
 
 # Using cycle also as key to avoid dropping the variable
 
@@ -16,8 +15,11 @@ nhanes =
   left_join(ogt, by = c('SEQN', 'cycle')) %>% 
   left_join(rhq, by = c('SEQN', 'cycle')) %>% 
   left_join(smq, by = c('SEQN', 'cycle')) %>% 
+  left_join(bmx, by = c('SEQN', 'cycle')) %>% 
+  left_join(paq, by = c('SEQN', 'cycle')) %>% 
+  left_join(crp, by = c('SEQN', 'cycle')) %>% 
   left_join(mortality, by = c('SEQN', 'cycle'))
   
 saveRDS(nhanes, file = 'nhanes_mort_complete.rds')
+write.csv(nhanes, file = 'nhanes_mort_complete.csv', row.names = FALSE)
 
-nhanes = readRDS('nhanes_mort_complete.rds')
