@@ -619,7 +619,11 @@ cvd_partial =
          flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
                                        ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
          age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E),
+         time_brst_cancer = age-age_brst_cancer,
+         flag_brst_cancer_1y = ifelse(time_brst_cancer > 1, 1, 0),
+         flag_brst_cancer_5y = ifelse(time_brst_cancer > 5, 1, 0),
          crp = LBXCRP,
+         flag_crp_1 = ifelse(crp > 1, 1, 0),
          bmi = BMXBMI,
          bd_wt_kg = BMXWT,
          bd_ht_cm = BMXHT,
@@ -873,17 +877,4 @@ District of Columbia.
 
 The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.
 
-### Descriptives
-
-```{r RunningDescriptives, warning=FALSE}
-
- source('8 - Descriptives.R')
- source('8 - Descriptives_9906.R')
- #source('8 - Descriptives_0716.R')
-
-```
-
-The output was included on Descriptives.xlsx file.
-
-Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.
 

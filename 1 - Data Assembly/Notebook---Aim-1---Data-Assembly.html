@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tamy Tsujimoto" />
 
-<meta name="date" content="2019-10-28" />
+<meta name="date" content="2019-11-05" />
 
 <title>CVD Project - Aim 1 - Notebook</title>
 
@@ -1611,7 +1611,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CVD Project - Aim 1 - Notebook</h1>
 <h4 class="author">Tamy Tsujimoto</h4>
-<h4 class="date">10/28/2019</h4>
+<h4 class="date">11/05/2019</h4>
 
 </div>
 
@@ -3213,7 +3213,11 @@ weights %&gt;%
          flag_hst_brst_cancer = ifelse(is.na(flag_hst_cancer), NA, 
                                        ifelse(MCQ230A %in% 14 | MCQ230B %in% 14 | MCQ230C %in% 14, 1, 0)),
          age_brst_cancer = ifelse(MCQ240E == 99999, NA, MCQ240E),
+         time_brst_cancer = age-age_brst_cancer,
+         flag_brst_cancer_1y = ifelse(time_brst_cancer &gt; 1, 1, 0),
+         flag_brst_cancer_5y = ifelse(time_brst_cancer &gt; 5, 1, 0),
          crp = LBXCRP,
+         flag_crp_1 = ifelse(crp &gt; 1, 1, 0),
          bmi = BMXBMI,
          bd_wt_kg = BMXWT,
          bd_ht_cm = BMXHT,
@@ -3538,14 +3542,6 @@ cvd_partial %&gt;%
 </ol>
 <p>Since 1999, the annual sample size has been approximately 5,000 individuals from 15 different locations (12 locations for 1999) selected from a sampling frame that includes all 50 states and the District of Columbia.</p>
 <p>The stratum (SDMVSTRA) and PSU (SDMVPSU) needed for Taylor Series Linearization are included in the demographic data file for each data release.</p>
-</div>
-<div id="descriptives" class="section level3">
-<h3>Descriptives</h3>
-<pre class="r"><code> source(&#39;8 - Descriptives.R&#39;)
- source(&#39;8 - Descriptives_9906.R&#39;)
- #source(&#39;8 - Descriptives_0716.R&#39;)</code></pre>
-<p>The output was included on Descriptives.xlsx file.</p>
-<p>Due to the small amount of CVD events in 2007-2014, it was decided to go through the analyses using only the 1999-2006 cohort.</p>
 </div>
 </div>
 </div>
