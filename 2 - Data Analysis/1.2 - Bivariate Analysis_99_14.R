@@ -27,7 +27,8 @@ cvd_data =
                  flag_rhmtd_arth,
                  flag_infnt_sga2,
                  flag_any_brstfd2,
-                 pce_risk_cat), funs(as.factor(.))) 
+                 pce_risk_cat,
+                 flag_crp_1), funs(as.factor(.))) 
 
 ##########################
 # DEFINING SURVEY DESIGN #
@@ -97,6 +98,7 @@ cat = c('race',
          'cvd_outcome',
          'cvd_outcome2',
         'dm_htn',
+        'flag_crp_1',
         'pce_risk_cat')
 
 cont = c('age',
@@ -105,6 +107,7 @@ cont = c('age',
          'bpxsy_avg_untrt',
          'cho_total',
          'cho_hdl',
+         'crp',
          'time_int',
          'time_exm',
          'pce_risk')
@@ -128,3 +131,37 @@ cvd_biv(cat = cat,
         by = 'flag_rhmtd_arth') %>% 
   write.csv('Output/biv_ra_9914_t.csv', row.names = FALSE)
 
+
+#######
+# CRP #
+#######
+
+cat = c('mortstat',
+        'ucod_leading',
+        'flag_mdeath_diab',
+        'flag_mdeath_htn',
+        'cvd_outcome',
+        'cvd_outcome2')
+
+cont = c('age',
+         'time_int',
+         'time_exm')
+
+cvd_biv(cat = cat, 
+        cont = cont, 
+        subpop = 'flag_subpop_w',
+        by = 'flag_crp_1') %>% 
+  write.csv('Output/biv_crp_9914_w.csv', row.names = FALSE)
+
+cvd_biv(cat = cat, 
+        cont = cont, 
+        subpop = 'flag_subpop_m',
+        by = 'flag_crp_1') %>% 
+  write.csv('Output/biv_crp_9914_m.csv', row.names = FALSE)
+
+
+cvd_biv(cat = cat, 
+        cont = cont, 
+        subpop = 'flag_subpop_t',
+        by = 'flag_crp_1') %>% 
+  write.csv('Output/biv_crp_9914_t.csv', row.names = FALSE)

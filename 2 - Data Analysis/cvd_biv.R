@@ -55,9 +55,11 @@ cvd_biv = function(cat, cont, subpop, by) {
       filter(get(subpop) == 1, !is.na(get(var))) %>% 
       group_by(get(by), get(var)) %>% 
       summarise(n = n()) %>% 
+      rowwise() %>% 
+      mutate(`get(var)` = paste0('n', `get(var)`)) %>% 
       spread(`get(var)`, 'n')
     
-    colnames(n) <- c('by', paste0('n', l))
+    colnames(n)[1] <- 'by'
     
     colnames(mean) <- c('by', paste0('avg', l), paste0('ci_l', l), paste0('ci_u', l))
     
