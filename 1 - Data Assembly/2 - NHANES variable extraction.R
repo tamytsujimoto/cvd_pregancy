@@ -247,15 +247,6 @@ bmx =
          BMXWT,
          BMXHT)
 
-# MET score - aggregated by SEQN
-paq = 
-  stack_nhanes_data(pattern = 'PAQIAF') %>% 
-  select(SEQN,
-         cycle,
-         PADMETS) %>% 
-  group_by(SEQN, cycle) %>% 
-  summarise(PADMETS = mean(PADMETS, na.rm = TRUE)) 
-
 # C-reactive protein
 crp = 
   stack_nhanes_data(pattern = paste(c('LAB11', 'L11', 'CRP'), collapse = "|")) %>% 

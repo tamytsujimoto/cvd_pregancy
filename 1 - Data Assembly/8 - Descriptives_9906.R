@@ -9,13 +9,15 @@ library(summarytools)
 # Filtering data from cohort 1999-2006 #
 
 cvd_final = 
-  readRDS(file = 'cvd_final.rds') %>% 
+  readRDS(file = 'Datasets/cvd_final.rds') %>% 
   mutate(bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
          bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt)) %>% 
   mutate_at(vars(gender,
                  race,
                  educ_level,
+                 flag_educ_hs,
                  marit_stat,
+                 flag_marit_1,
                  hh_income,
                  fam_income,
                  flag_milit_stat,
@@ -31,6 +33,7 @@ cvd_final =
                  flag_cur_preg,
                  flag_hst_preg,
                  flag_preg_eli,
+                 flag_parity_gt1,
                  flag_inft_wght_9lb,
                  flag_age_diab_30,
                  flag_infnt_sga,
@@ -41,7 +44,8 @@ cvd_final =
                  flag_hst_brstfd,
                  flag_cur_brstfd,
                  flag_any_brstfd,
-                 flag_infnt_brstfd,
+                 flag_any_brstfd_1m,
+                 brstfd,
                  flag_any_preg_comp,
                  flag_cons_30m,
                  flag_hst_htn,
@@ -77,24 +81,30 @@ cvd_final =
                  cvd_outcome2,
                  flag_hst_cancer,
                  flag_hst_brst_cancer,
-                 pce_risk_cat), funs(as.factor(.))) %>% 
-  filter(cohort == 1)
+                 flag_brst_cancer_1y,
+                 flag_brst_cancer_5y,
+                 flag_crp_1,
+                 pce_risk_cat,
+                 ADHERENCE), funs(as.factor(.))) %>% 
+  filter(cohort == 1, diet_recall == 1) # only considering reliable diet recall (for HEI2015)
 
 ##########################
 # DEFINING SURVEY DESIGN #
 ##########################
 
+# Using sampling weight from diet data (because of HEI2015 variables)
+
 nhanes <- svydesign(id=~SDMVPSU, 
                     strata=~SDMVSTRA, 
                     nest=TRUE, 
-                    weights=~WTMEC_C1, 
+                    weights=~WTDR_C1, 
                     data=cvd_final)
 
 ####################################
 # FUNCTION TO COMPUTE DESCRIPTIVES #
 ####################################
 
-source('cvd_desc.R')
+source('Functions/cvd_desc.R')
 
 #####################
 # Sociodemographics #
@@ -103,7 +113,9 @@ source('cvd_desc.R')
 cat = c('gender',
         'race',
         'educ_level',
+        'flag_educ_hs',
         'marit_stat',
+        'flag_marit_1',
         'hh_income',
         'fam_income',
         'flag_milit_stat',
@@ -142,7 +154,7 @@ cvd_desc(cat,
 cat = c('flag_cur_preg',
         'flag_hst_preg',
         'flag_preg_eli',
-        #'flag_inft_wght_9lb',
+        'flag_parity_gt1',
         'flag_age_diab_30')
 
 cont = c(
@@ -181,13 +193,14 @@ cat = c('flag_pretrm_dlvry',
         'flag_hst_brstfd',
         'flag_cur_brstfd',
         'flag_any_brstfd',
-        'flag_infnt_brstfd',
+        'flag_any_brstfd_1m',
+        'brstfd',
         'flag_any_preg_comp')
 
 cont = c('n_pretrm_dlvry',
          'n_infnt_sga',
          #'age_gest_diab',
-         'n_infnt_brstfd')
+         'n_infnt_brstfd_1m')
 
 cvd_desc(cat,
          cont,
@@ -256,13 +269,13 @@ cat = c('flag_cons_30m',
         'flag_diab_a1c',
         'flag_diab_ogtt',
         'flag_diab',
-        'flag_hst_chf',
-        'flag_hst_chd',
-        'flag_hst_angn',
-        'flag_hst_hattck',
-        'flag_hst_strk',
-        'flag_hst_cvd',
-        'flag_rhmtd_arth')
+        'flag_rhmtd_arth',
+        'flag_crp_1',
+        'flag_hst_cancer',
+        'flag_hst_brst_cancer',
+        'flag_brst_cancer_1y',
+        'flag_brst_cancer_5y',
+        'ADHERENCE')
 
 cont = c(
   'bpxsy_avg',
@@ -274,7 +287,11 @@ cont = c(
   'cot_lvl',
   'fglu',
   'a1c',
-  'ogtt')
+  'ogtt',
+  'bmi',
+  'crp',
+  'age_brst_cancer',
+  'PAG_MINW')
 
 cvd_desc(cat, 
          cont, 
@@ -282,7 +299,7 @@ cvd_desc(cat,
          filename = 'trad_9906')
 
 cvd_desc(cat, 
-         cont, 
+         cont[-13], 
          subpop='flag_subpop_m',
          filename = 'trad_9906_m')
 
@@ -330,35 +347,46 @@ cvd_desc(cat,
          subpop = 'flag_subpop_t',
          filename = 'follow_9906_t')
 
-#################
-# Breast Cancer #
-#################
+###########
+# HEI2015 #
+###########
 
-cat = c('flag_hst_cancer',
-        'flag_hst_brst_cancer')
+cat = c('race')
 
-cont = c('age_brst_cancer')
+cont = c('HEI2015C1_TOTALVEG',
+         'HEI2015C2_GREEN_AND_BEAN',
+         'HEI2015C3_TOTALFRUIT',
+         'HEI2015C4_WHOLEFRUIT',
+         'HEI2015C5_WHOLEGRAIN',
+         'HEI2015C6_TOTALDAIRY',
+         'HEI2015C7_TOTPROT',
+         'HEI2015C8_SEAPLANT_PROT',
+         'HEI2015C9_FATTYACID',
+         'HEI2015C10_SODIUM',
+         'HEI2015C11_REFINEDGRAIN',
+         'HEI2015C12_SFAT',
+         'HEI2015C13_ADDSUG',
+         'HEI2015_TOTAL_SCORE')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop',
-         filename = 'cancer_9906')
+         filename = 'hei_9906')
 
-cvd_desc(cat = c('flag_hst_cancer',
-                 'flag_hst_brst_cancer'),
-         cont = c('age'),
+cvd_desc(cat,
+         cont,
          subpop = 'flag_subpop_m',
-         filename = 'cancer_9906_m')
+         filename = 'hei_9906_m')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop_w',
-         filename = 'cancer_9906_w')
+         filename = 'hei_9906_w')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop_t',
-         filename = 'cancer_9906_t')
+         filename = 'hei_9906_t')
 
 ##################
 # PCE Risk Score #

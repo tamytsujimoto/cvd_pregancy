@@ -1,6 +1,6 @@
 library(tidyverse)
 
-cvd = readRDS(file = 'cvd_data.rds')
+cvd = readRDS(file = 'nhanes_mort_complete.rds')
 
 # SY BP #
 

@@ -7,13 +7,15 @@
 ################
 
 cvd_final = 
-  readRDS(file = 'cvd_final.rds') %>% 
+  readRDS(file = 'Datasets/cvd_final.rds') %>% 
   mutate(bpxsy_avg_trt = ifelse(bpxsy_avg_trt == 0, NA, bpxsy_avg_trt),
          bpxsy_avg_untrt = ifelse(bpxsy_avg_untrt == 0, NA, bpxsy_avg_untrt)) %>% 
   mutate_at(vars(gender,
                  race,
                  educ_level,
+                 flag_educ_hs,
                  marit_stat,
+                 flag_marit_1,
                  hh_income,
                  fam_income,
                  flag_milit_stat,
@@ -29,6 +31,7 @@ cvd_final =
                  flag_cur_preg,
                  flag_hst_preg,
                  flag_preg_eli,
+                 flag_parity_gt1,
                  flag_inft_wght_9lb,
                  flag_age_diab_30,
                  flag_infnt_sga,
@@ -75,7 +78,11 @@ cvd_final =
                  cvd_outcome2,
                  flag_hst_cancer,
                  flag_hst_brst_cancer,
-                 pce_risk_cat), funs(as.factor(.))) 
+                 flag_brst_cancer_1y,
+                 flag_brst_cancer_5y,
+                 flag_crp_1,
+                 pce_risk_cat,
+                 ADHERENCE), funs(as.factor(.)))
 
 ##########################
 # DEFINING SURVEY DESIGN #
@@ -100,7 +107,9 @@ source('cvd_desc.R')
 cat = c('gender',
         'race',
         'educ_level',
+        'flag_educ_hs',
         'marit_stat',
+        'flag_marit_1',
         'hh_income',
         'fam_income',
         'flag_milit_stat',
@@ -139,7 +148,7 @@ cvd_desc(cat,
 cat = c('flag_cur_preg',
         'flag_hst_preg',
         'flag_preg_eli',
-        #'flag_inft_wght_9lb',
+        'flag_parity_gt1',
         'flag_age_diab_30')
 
 cont = c(
@@ -327,65 +336,44 @@ cvd_desc(cat,
          subpop = 'flag_subpop_t',
          filename = 'follow_9914_t')
 
-#################
-# Breast Cancer #
-#################
+#####################################
+# Breast Cancer and other variables #
+#####################################
 
-cat = c('flag_hst_cancer',
-        'flag_hst_brst_cancer')
+cat = c('flag_crp_1',
+        'flag_hst_cancer',
+        'flag_hst_brst_cancer',
+        'flag_brst_cancer_1y',
+        'flag_brst_cancer_5y',
+        'ADHERENCE')
 
-cont = c('age_brst_cancer')
-
-cvd_desc(cat,
-         cont,
-         subpop = 'flag_subpop',
-         filename = 'cancer_9914')
-
-cvd_desc(cat = c('flag_hst_cancer',
-                 'flag_hst_brst_cancer'),
-         cont = c('age'),
-         subpop = 'flag_subpop_m',
-         filename = 'cancer_9914_m')
-
-cvd_desc(cat,
-         cont,
-         subpop = 'flag_subpop_w',
-         filename = 'cancer_9914_w')
-
-cvd_desc(cat,
-         cont,
-         subpop = 'flag_subpop_t',
-         filename = 'cancer_9914_t')
-
-#################
-# Breast Cancer #
-#################
-
-cat = c('flag_hst_cancer',
-        'flag_hst_brst_cancer')
-
-cont = c('age_brst_cancer')
+cont = c('bmi',
+         'crp',
+         'PAG_MINW',
+         'age_brst_cancer')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop',
-         filename = 'cancer_9914')
+         filename = 'other_9914')
 
-cvd_desc(cat = c('flag_hst_cancer',
-                 'flag_hst_brst_cancer'),
-         cont = c('age'),
+cvd_desc(cat,
+         cont = c('bmi',
+                  'crp',
+                  'PAG_MINW'),
          subpop = 'flag_subpop_m',
-         filename = 'cancer_9914_m')
+         filename = 'other_9914_m')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop_w',
-         filename = 'cancer_9914_w')
+         filename = 'other_9914_w')
 
 cvd_desc(cat,
          cont,
          subpop = 'flag_subpop_t',
-         filename = 'cancer_9914_t')
+         filename = 'other_9914_t')
+
 
 ##################
 # PCE Risk Score #

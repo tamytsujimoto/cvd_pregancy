@@ -2,8 +2,8 @@ library(tidyverse)
 library(survey)
 library(summarytools)
 
-cvd_partial = 
-  readRDS(file = 'cvd_partial.rds') %>% 
+cvd_final = 
+  readRDS(file = 'Datasets/cvd_final.rds')  %>% 
   filter(flag_subpop == 1)
 
 #####################
@@ -241,3 +241,93 @@ cvd_partial %>%
   filter(is.na(flag_rhmtd_arth)) %>% 
   select(MCQ160A) %>% 
     summarytools::freq()
+
+###################
+# MODEL VARIABLES #
+###################
+
+cvd_final %>% 
+  filter(is.na(HEI2015_TOTAL_SCORE), cohort == 1, diet_recall == 1) %>% 
+  group_by(cycle) %>% 
+  summarise(n=n())
+  
+ cvd_final %>% 
+   filter(cohort == 1, diet_recall == 1) %>% 
+   summarise_at(vars(flag_marit_1,
+                     flag_educ_hs,
+                     flag_parity_gt1,
+                     age_fst_live_brth,
+                     HEI2015_TOTAL_SCORE,
+                     PAG_MINW,
+                     bmi,
+                     pce_risk), list(~sum(is.na(.))))
+
+ cvd_final %>% 
+   filter(cohort == 1, diet_recall == 1) %>% 
+   select(flag_marit_1,
+          flag_educ_hs,
+          flag_parity_gt1,
+          age_fst_live_brth,
+          HEI2015_TOTAL_SCORE,
+          PAG_MINW,
+          bmi,
+          pce_risk) %>% 
+   filter(complete.cases(.)) %>% glimpse
+ 
+ 
+ 
+ 
+ 
+ cvd_final %>% 
+   filter(cohort == 1, diet_recall == 1) %>% 
+   select(cvd_outcome,
+          cvd_outcome2,
+          flag_infnt_sga,
+          flag_any_brstfd_1m,
+          flag_marit_1,
+          flag_educ_hs,
+          flag_parity_gt1,
+          age_fst_live_brth,
+          HEI2015_TOTAL_SCORE,
+          PAG_MINW,
+          bmi,
+          pce_risk) %>% 
+   mutate_at(vars(-c(cvd_outcome, cvd_outcome2)), ~ifelse(is.na(.), 1, 0)) %>% 
+   group_by(flag_infnt_sga,
+            #flag_any_brstfd_1m,
+            pce_risk,
+            HEI2015_TOTAL_SCORE,
+            PAG_MINW,
+            bmi,
+            flag_marit_1,
+            flag_educ_hs,
+            flag_parity_gt1,
+            age_fst_live_brth) %>% 
+   summarise(n=n(),
+             n_cvd = sum(cvd_outcome),
+             n_cvd2= sum(cvd_outcome2)) %>% 
+   write.csv('cov_na.csv', row.names = FALSE)
+ 
+ cvd_final %>% 
+   filter(cohort == 1, diet_recall == 1) %>% 
+   select(cvd_outcome,
+          cvd_outcome2,
+          age,
+          cho_total,
+          cho_hdl,
+          bpxsy_avg_trt,
+          bpxsy_avg_untrt,
+          flag_smkng_cur,
+          flag_diab) %>% 
+   mutate_at(vars(-c(cvd_outcome, cvd_outcome2)), ~ifelse(is.na(.), 1, 0)) %>% 
+   group_by(age,
+            cho_total,
+            cho_hdl,
+            bpxsy_avg_trt,
+            bpxsy_avg_untrt,
+            flag_smkng_cur,
+            flag_diab) %>% 
+   summarise(n=n(),
+             n_cvd = sum(cvd_outcome),
+             n_cvd2= sum(cvd_outcome2)) %>% 
+   write.csv('pce_na.csv', row.names = FALSE)

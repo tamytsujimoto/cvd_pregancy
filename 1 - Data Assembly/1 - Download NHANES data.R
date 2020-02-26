@@ -53,6 +53,41 @@ nhanes_load_data(file = "PAQIAF",
                  year = yr[1:4], 
                  destination = dest_path)
 
+# MET Score
+nhanes_load_data(file = "PAQ", 
+                 year = yr[1:4], 
+                 destination = dest_path)
+
+# Dietary data Total Nutrient Intake - 1999-2002
+nhanes_load_data(file = "DRXTOT", 
+                 year = yr[c(1:2)], 
+                 destination = dest_path)
+
+# Dietary data Individual Foods - 1999-2002
+nhanes_load_data(file = "DRXIFF", 
+                 year = yr[c(1:2)], 
+                 destination = dest_path)
+
+# Dietary data Individual Foods DAY 1 - 2003-2004
+nhanes_load_data(file = "DR1IFF", 
+                 year = yr[3], 
+                 destination = dest_path)
+
+# Dietary data Individual Foods DAY 2 - 2003-2004
+nhanes_load_data(file = "DR2IFF", 
+                 year = yr[3], 
+                 destination = dest_path)
+
+# Dietary data - DAY 1
+nhanes_load_data(file = "DR1TOT", 
+                 year = yr[-c(1:2)], 
+                 destination = dest_path)
+
+# Dietary data - DAY 2
+nhanes_load_data(file = "DR2TOT", 
+                 year = yr[-c(1:2)], 
+                 destination = dest_path)
+
 ########################################
 # DIFFERENT NAMES DATASETS (1999-2014) #
 ########################################
@@ -86,8 +121,10 @@ nhanes_load_data(file = c('LAB10AM', 'L10AM_B', 'L10AM_C', rep('GLU', 5)),
                  year = yr, 
                  destination = dest_path)
 
-# MET Score
+# CRP
 nhanes_load_data(file = c('LAB11', 'L11_B', 'L11_C', rep('CRP', 3)), 
                  year = yr[-c(7:8)], 
                  destination = dest_path)
+
+
 
